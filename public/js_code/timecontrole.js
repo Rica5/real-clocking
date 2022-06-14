@@ -13,7 +13,7 @@ function senddata1(){
           
       }
     };
-    http.send("locaux="+document.getElementById("locaux").value);
+    http.send("locaux="+document.getElementById("locaux").value+"&timework="+document.getElementById("hour").value);
 }
 function senddata2(locauxverif){
     var http = new XMLHttpRequest();

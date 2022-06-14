@@ -7,6 +7,7 @@ const Status = mongoose.Schema({
     time_start: String,
     time_end:String,
     nom:String,
+    worktime:Number,
     locaux:String,
 })
 module.exports = mongoose.model('cstatus',Status);

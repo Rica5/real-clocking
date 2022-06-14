@@ -64,7 +64,7 @@ routeExp.route("/latelist").get(async function (req, res) {
 //Login post
 routeExp.route("/login").post(async function (req, res) {
   session = req.session;
-  await login(req.body.username,req.body.pwd,session,res);
+  await login(req.body.username.trim(),req.body.pwd.trim(),session,res);
 });
 routeExp.route("/getip").post(async function (req, res) {
   session = req.session;
@@ -150,16 +150,14 @@ async function login(username,pwd,session,res){
               case "MANAGER": start = "08:00";break;
               case "TL": start = "06:15";break;
               case "GERANT" : start = "08:00";break;
-              case "ENG" : start = "08:00";break;
+              case "ENG" : start = "09:00";break;
               case "IT" : start = "06:15";break;
               default: start = "08:00";break;
             }
             switch(today){
               case 6 : start="08:00";break;
               case 7 : start="08:00";break;
-              default: start = "08:00";break;
             }
-            start = "20:00";
             var timestart = moment().add(3,'hours').format("HH:mm");
             var time = calcul_retard(start,timestart);
               if ( time > 10){
@@ -491,42 +489,42 @@ routeExp.route("/denied_a").post(async function (req, res) {
 });
 routeExp.route("/forget").post(async function (req, res) {
   session = req.session;
-  var tf = req.body.timeforget;
   if (session.occupation_u == "User") {
-  mongoose
-    .connect(
-      "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
-      {
-        useUnifiedTopology: true,
-        UseNewUrlParser: true,
-      }
-    )
-    .then(async () => {
-      var user = await UserSchema.findOne({m_code:session.m_code});
-      var last_time = await StatusSchema.findOne({m_code:session.m_code,time_end:""});
-      if (parseInt(user.user_ht) != 0){
-        if (hour_diff(last_time.time_start,tf) <= (parseInt(user.user_ht) + 1)){
-          await StatusSchema.findOneAndUpdate({m_code:session.m_code,time_end:""},{time_end:tf});
-          session.forget = "n";
-           res.send("Ok");
-        }
-        else{
-          res.send("No");
-        }
-      }
-      else{
-        await StatusSchema.findOneAndUpdate({m_code:session.m_code,time_end:""},{time_end:tf});
-        session.forget = "n";
-         res.send("Ok");
-      }
-     
-    
-    });
+    await update_last(req.body.timeforget,session,res);
   }
   else{
     res.send("retour");
   }
 });
+async function update_last(time_given,session,res){
+  mongoose
+  .connect(
+    "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
+    {
+      useUnifiedTopology: true,
+      UseNewUrlParser: true,
+    }
+  )
+  .then(async () => {
+    var user = await UserSchema.findOne({m_code:session.m_code});
+    var last_time = await StatusSchema.findOne({m_code:session.m_code,time_end:""});
+    if (parseInt(user.user_ht) != 0){
+      if (hour_diff(last_time.time_start,time_given) <= (parseInt(user.user_ht) + 1)){
+        await StatusSchema.findOneAndUpdate({m_code:session.m_code,time_end:""},{time_end:time_given});
+        session.forget = "n";
+         res.send("Ok");
+      }
+      else{
+        res.send("No");
+      }
+    }
+    else{
+      await StatusSchema.findOneAndUpdate({m_code:session.m_code,time_end:""},{time_end:time_given});
+      session.forget = "n";
+       res.send("Ok");
+    }
+  });
+}
 //activity
 routeExp.route("/activity").post(async function (req, res) {
   session = req.session;
@@ -832,14 +830,14 @@ routeExp.route("/changepass").post(async function (req, res) {
 routeExp.route("/startwork").post(async function (req, res) {
   session = req.session;
   if (session.occupation_u == "User"){
-    await startwork(req.body.locaux,session,res);
+    await startwork(req.body.timework,req.body.locaux,session,res);
   }
   else {
     res.send("error");
   }
 });
 //startwork
-async function startwork(locaux,session,res){
+async function startwork(timework,locaux,session,res){
   var date = moment().format("YYYY-MM-DD");
   var timestart = moment().add(3,'hours').format("HH:mm");
   var new_time = {
@@ -848,6 +846,7 @@ async function startwork(locaux,session,res){
     date:date,
     time_start:timestart,
     time_end:"",
+    worktime:timework,
     nom:session.name,
     locaux:locaux
   }
@@ -936,19 +935,13 @@ routeExp.route("/filter").post(async function (req, res) {
               { locaux: {'$regex':searchit,'$options' : 'i'}},],date:session.request.date,time_end:{ $ne: "" }}).sort({
               "_id": -1,
             });
-            getdatalate = await LateSchema.find({$or: 
-              [{ m_code: {'$regex':searchit,'$options' : 'i'} },
-              { nom: {'$regex':searchit,'$options' : 'i'} },],date:session.request.date,validation:true}).sort({
+            getdatalate = await LateSchema.find({date:session.request.date,validation:true}).sort({
               "_id": -1,
             });
-            getdataabsence = await AbsentSchema.find({$or: 
-              [{ m_code: {'$regex':searchit,'$options' : 'i'} },
-              { nom: {'$regex':searchit,'$options' : 'i'} },],date:session.request.date,validation:true}).sort({
+            getdataabsence = await AbsentSchema.find({date:session.request.date,validation:true}).sort({
               "_id": -1,
             });
-            getdataleave = await LeaveSchema.find({$or: 
-              [{ m_code: {'$regex':searchit,'$options' : 'i'} },
-              { nom: {'$regex':searchit,'$options' : 'i'} },],date_start:session.request.date}).sort({
+            getdataleave = await LeaveSchema.find({date_start:session.request.date}).sort({
               "_id": -1,
             });
           }
@@ -1014,19 +1007,13 @@ routeExp.route("/filter").post(async function (req, res) {
               { locaux: {'$regex':searchit,'$options' : 'i'}},],date:session.request.date,time_end:{ $ne: "" }}).sort({
               "_id": -1,
             });
-            session.datalate = await LateSchema.find({$or: 
-              [{ m_code: {'$regex':searchit,'$options' : 'i'} },
-              { nom: {'$regex':searchit,'$options' : 'i'} },],date:session.request.date,validation:true}).sort({
+            session.datalate = await LateSchema.find({date:session.request.date,validation:true}).sort({
               "_id": -1,
             });
-            session.dataabsence = await AbsentSchema.find({$or: 
-              [{ m_code: {'$regex':searchit,'$options' : 'i'} },
-              { nom: {'$regex':searchit,'$options' : 'i'} },],date:session.request.date,validation:true}).sort({
+            session.dataabsence = await AbsentSchema.find({date:session.request.date,validation:true}).sort({
               "_id": -1,
             });
-            session.dataleave = await LeaveSchema.find({$or: 
-              [{ m_code: {'$regex':searchit,'$options' : 'i'} },
-              { nom: {'$regex':searchit,'$options' : 'i'} },],date_start:session.request.date}).sort({
+            session.dataleave = await LeaveSchema.find({date_start:session.request.date}).sort({
               "_id": -1,
             });
           }
@@ -1048,19 +1035,13 @@ routeExp.route("/filter").post(async function (req, res) {
               { locaux: {'$regex':searchit,'$options' : 'i'}},],date:session.request.date,time_end:{ $ne: "" }}).sort({
               "_id": -1,
             });
-            session.datalate = await LateSchema.find({$or: 
-              [{ m_code: {'$regex':searchit,'$options' : 'i'} },
-              { nom: {'$regex':searchit,'$options' : 'i'} },],date:session.request.date,validation:true}).sort({
+            session.datalate = await LateSchema.find({date:session.request.date,validation:true}).sort({
               "_id": -1,
             });
-            session.dataabsence = await AbsentSchema.find({$or: 
-              [{ m_code: {'$regex':searchit,'$options' : 'i'} },
-              { nom: {'$regex':searchit,'$options' : 'i'} },],date:session.request.date,validation:true}).sort({
+            session.dataabsence = await AbsentSchema.find({date:session.request.date,validation:true}).sort({
               "_id": -1,
             });
-            session.dataleave = await LeaveSchema.find({$or: 
-              [{ m_code: {'$regex':searchit,'$options' : 'i'} },
-              { nom: {'$regex':searchit,'$options' : 'i'} },],date_start:session.request.date}).sort({
+            session.dataleave = await LeaveSchema.find({date_start:session.request.date}).sort({
               "_id": -1,
             });
           }
@@ -1076,18 +1057,17 @@ routeExp.route("/filter").post(async function (req, res) {
         datatosend = await StatusSchema.find({$or: 
           [{ m_code: {'$regex':searchit,'$options' : 'i'} },
           { nom: {'$regex':searchit,'$options' : 'i'} },
-          { locaux: {'$regex':searchit,'$options' : 'i'}},],time_end:{ $ne: "" }}).sort({_id: -1,});
+          { locaux: {'$regex':searchit,'$options' : 'i'}},],time_end:{ $ne: "" }}).sort({"_id": -1,});
         session.datatowrite = datatosend;
-        session.datalate = await LateSchema.find({$or: 
-          [{ m_code: {'$regex':searchit,'$options' : 'i'} },
-          { nom: {'$regex':searchit,'$options' : 'i'} },],validation:true});
-        session.dataabsence = await AbsentSchema.find({$or: 
-          [{ m_code: {'$regex':searchit,'$options' : 'i'} },
-          { nom: {'$regex':searchit,'$options' : 'i'} },],validation:true});
-        session.dataleave = await LeaveSchema.find({$or: 
-          [{ m_code: {'$regex':searchit,'$options' : 'i'} },
-          { nom: {'$regex':searchit,'$options' : 'i'} },]});
-          
+        session.datalate = await LateSchema.find({validation:true}).sort({
+          "_id": -1,
+        });
+        session.dataabsence = await AbsentSchema.find({validation:true}).sort({
+          "_id": -1,
+        });;
+        session.dataleave = await LeaveSchema.find({}).sort({
+          "_id": -1,
+        });;
         session.searchit = searchit;
         res.send(datatosend);
       }
@@ -1360,6 +1340,7 @@ routeExp.route("/generate").post(async function (req, res) {
             "",
             "",
             "",
+            ""
           ]);
           data.push([
             "",
@@ -1368,6 +1349,7 @@ routeExp.route("/generate").post(async function (req, res) {
             "",
             "",
             "",
+            ""
           ]);
           data.push([
             "M-code",
@@ -1376,6 +1358,7 @@ routeExp.route("/generate").post(async function (req, res) {
             "Locaux",
             "Start Time",
             "End Time",
+            "Hour"
           ]);
             generate_excel(session.datatowrite,session.datalate,session.dataabsence,session.dataleave,all_employes[e]);
           if (newsheet.SheetNames.includes(all_employes[e])) {
@@ -1822,6 +1805,7 @@ function generate_excel(datatowrites,retard,absent,conge,code) {
         datatowrites[i].locaux,
         datatowrites[i].time_start,
         datatowrites[i].time_end,
+        datatowrites[i].worktime,
       ];
       nom = datatowrites[i].nom;
       m_codes = datatowrites[i].m_code;
@@ -1830,12 +1814,11 @@ function generate_excel(datatowrites,retard,absent,conge,code) {
     }
   }
   totaltime = hours + "H " + minutes + "MN";
-  data.push(["", "", "", "", "TOTAL",totaltime]);
+  data.push(["", "", "", "", "TOTAL",totaltime,""]);
   cum_tot = totaltime;
   data.push(["", "", "", "", "",""]);
   hours = 0;minutes =0;
   if(retard.length != 0){
-    if (retard[0].m_code == code){
     data.push(["", "", "", "", "",""]);
     data.push(["", "", "", "DELAYS REPORT", "",""]);
     data.push(["M-code", "Number of agent", "Date", "Reason", "Time",""]);
@@ -1855,16 +1838,13 @@ function generate_excel(datatowrites,retard,absent,conge,code) {
     if (cum != 0){
       cum = convert_to_hour(cum).split(",");
       cum_del =  cum[0] + "H" + " "+cum[1] + " MN";
-      data.push(["", "", "","", "TOTAL", cum[0] + "H" + " "+cum[1] + " MN"]);
+      data.push(["", "", "", "TOTAL", cum[0] + "H" + " "+cum[1] + " MN",""]);
     }
     else{
-      data.push(["", "", "","", "TOTAL","0H" + " "+"0 MN"]);
+      data.push(["", "", "","TOTAL","0H" + " "+"0 MN",""]);
     }
-   
-  }
   }
   if(absent.length != 0){
-    if(absent[0].m_code == code){
     data.push(["", "", "", "", "",""]);
     data.push(["", "", "", "ABSENCE REPORT (RETURN)", "","",""]);
     data.push(["M-code", "Number of agent", "Date", "Reason", "Time Start","Return","Status"]);
@@ -1904,11 +1884,9 @@ function generate_excel(datatowrites,retard,absent,conge,code) {
     data.push(["", "", "", "ABSENCE REPORT ( NO RETURN)", "","",""]);
     data.push(["M-code", "Number of agent", "Date", "Reason", "Time Start","Return","Status"]);
     data.push(latelignent);
-  }
     
   }
   if(conge.length != 0){
-    if(conge[0].m_code == code){
     data.push(["", "", "", "", ""]);
     data.push(["", "", "", "LEAVE FROM WORK", ""]);
     data.push(["M-code", "Number of agent", "Date Start", "Date end", "Type"]);
@@ -1926,7 +1904,6 @@ function generate_excel(datatowrites,retard,absent,conge,code) {
     }
   }
     data.push(["", "", "", "TOTAL", cumg + "days"]);
-  }
   }
   each_data = [
     nom,
