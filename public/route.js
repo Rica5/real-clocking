@@ -88,7 +88,7 @@ async function login(username,pwd,session,res){
       });
       if (logger) { 
         //Tete
-        if ((logger.shift == "SHIFT 1" || logger.shift == "SHIFT 2") && session.ip != "102.16.44.83"){
+        if ((logger.shift == "SHIFT 1" || logger.shift == "SHIFT 2") && ((session.ip != "102.16.26.233" && session.ip != "102.16.26.115" && session.ip != "41.63.146.186"))){
           res.render("denied.html");
         }
         else{
