@@ -18,6 +18,8 @@ var num_file = 1;
 var hours = 0;
 var minutes = 0;
 var notification = [];
+var data_desired = {};
+var filtrage = {};
 
 //Mailing
 var transporter = nodemailer.createTransport({
@@ -36,7 +38,6 @@ routeExp.route("/").get(async function (req, res) {
     } else if (session.occupation_a == "Admin") {
       res.redirect("/home");
     } else {
-      await checkleave();
       res.render("Login.html", { erreur: "" });
     }
 });
@@ -88,22 +89,23 @@ async function login(username,pwd,session,res){
       });
       if (logger) { 
         //Tete
-        if ((logger.shift == "SHIFT 1" || logger.shift == "SHIFT 2") && ((session.ip != "102.16.26.233" && session.ip != "102.16.26.115" && session.ip != "41.63.146.186"))){
+        if ((logger.shift == "SHIFT 1" || logger.shift == "SHIFT 2") && ((session.ip != "102.16.44.83" && session.ip != "102.16.26.233" && session.ip != "102.16.26.115" && session.ip != "41.63.146.186"))){
           res.render("denied.html");
         }
         else{
         if (logger.change != "n"){
           if (logger.occupation == "User") {
-            session.forget = "n";
-            if (await StatusSchema.findOne({m_code:logger.m_code,time_end:"",date:{$ne:moment().format("YYYY-MM-DD")}})){
-                session.forget ="y";
-                await UserSchema.findOneAndUpdate({m_code:logger.m_code},{act_stat:"LEFTING",act_loc:"Not defined"});
-            }
             session.occupation_u = logger.occupation;
             session.m_code = logger.m_code;
             session.shift = logger.shift;
-          if (difference_year(logger.save_at) && logger.remaining_leave == 0){
-              await leave_permission(logger.m_code);
+            session.forget = "n";
+            if (await StatusSchema.findOne({m_code:session.m_code,time_end:"",date:{$ne:moment().format("YYYY-MM-DD")}})){
+                session.forget ="y";
+                await UserSchema.findOneAndUpdate({m_code:session.m_code},{act_stat:"LEFTING",act_loc:"Not defined",late:"n",count:0});
+            }
+           
+          if (difference_year(logger.save_at) && logger.leave_stat == "n"){
+              await leave_permission(session.m_code);
           }
           if (logger.act_stat == "VACATION"){
             session.occupation_u = null;
@@ -114,6 +116,7 @@ async function login(username,pwd,session,res){
             });
           }
           else{
+            session.time = "y";
             if (await StatusSchema.findOne({m_code:session.m_code,date:moment().format("YYYY-MM-DD")})){
               session.late = "y";
               await UserSchema.findOneAndUpdate({m_code:session.m_code},{late:"y"});
@@ -125,7 +128,6 @@ async function login(username,pwd,session,res){
             session.name = logger.first_name + " " + logger.last_name;
             session.num_agent = logger.num_agent;
             var late = await LateSchema.findOne({m_code:logger.m_code,date:moment().format("YYYY-MM-DD"),reason:""});
-            
             if (late){
               session.time = late.time + " minutes";
               res.redirect("/employee");
@@ -161,6 +163,7 @@ async function login(username,pwd,session,res){
             var timestart = moment().add(3,'hours').format("HH:mm");
             var time = calcul_retard(start,timestart);
               if ( time > 10){
+                session.time = time + " minutes";
                 var new_late = {
                   m_code:session.m_code,
                   num_agent : session.num_agent,
@@ -171,7 +174,6 @@ async function login(username,pwd,session,res){
                   validation:false
                 }
                 await LateSchema(new_late).save();
-                session.time = time + " minutes";
                res.redirect("/employee");
             }
             else{
@@ -194,7 +196,7 @@ async function login(username,pwd,session,res){
                  delete notification[0];
                }
              }
-             session.request = {};
+             filtrage = {};
             res.redirect("/home");
           }
         }
@@ -330,6 +332,7 @@ async function reason_late(reason,session,res){
 routeExp.route("/employee").get(async function (req, res) {
   session = req.session;
   if (session.occupation_u == "User"){
+    await checkleave();
     mongoose
     .connect(
       "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
@@ -509,13 +512,18 @@ async function update_last(time_given,session,res){
     var user = await UserSchema.findOne({m_code:session.m_code});
     var last_time = await StatusSchema.findOne({m_code:session.m_code,time_end:""});
     if (parseInt(user.user_ht) != 0){
-      if (hour_diff(last_time.time_start,time_given) <= (parseInt(user.user_ht) + 1)){
-        await StatusSchema.findOneAndUpdate({m_code:session.m_code,time_end:""},{time_end:time_given});
-        session.forget = "n";
-         res.send("Ok");
+      if (last_time.time_start){
+        if (hour_diff(last_time.time_start,time_given) <= (parseInt(user.user_ht) + 1)){
+          session.forget = "n";
+          await StatusSchema.findOneAndUpdate({m_code:session.m_code,time_end:""},{time_end:time_given});
+           res.send("Ok");
+        }
+        else{
+          res.send("No");
+        }
       }
       else{
-        res.send("No");
+        res.send("Ok");
       }
     }
     else{
@@ -597,6 +605,7 @@ async function take_break(session){
 routeExp.route("/home").get(async function (req, res) {
   session = req.session;
   if (session.occupation_a == "Admin"){
+    await checkleave();
     mongoose
     .connect(
       "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
@@ -627,14 +636,15 @@ routeExp.route("/details").get(async function (req, res) {
     )
     .then(async () => {
       if (session.filtrage == ""){
-        res.render("details.html",{timesheets:session.datatowrite,notif:notification});
+        res.render("details.html",{timesheets:data_desired.datatowrite,notif:notification});
+        session.filtrage = null;
       }
       else{
         var timesheets =  await StatusSchema.find({time_end:{ $ne: "" }});
-        session.datatowrite = timesheets;
-        session.datalate = await LateSchema.find({validation:true});
-        session.dataabsence = await AbsentSchema.find({validation:true});
-        session.dataleave = await LeaveSchema.find({});
+        data_desired.datatowrite = timesheets;
+        data_desired.datalate = await LateSchema.find({validation:true});
+        data_desired.dataabsence = await AbsentSchema.find({validation:true});
+        data_desired.dataleave = await LeaveSchema.find({});
         res.render("details.html",{timesheets:timesheets,notif:notification});
       }  
     })
@@ -737,7 +747,7 @@ routeExp.route("/dropuser").post(async function (req, res) {
     }
   )
   .then(async () => {
-      await UserSchema.findOneAndDelete({first_name:names[0],last_name:names[1]});
+      await UserSchema.findOneAndDelete({m_code:names});
       res.send("User deleted successfully");
 });
 });
@@ -905,6 +915,7 @@ routeExp.route("/filter").post(async function (req, res) {
       }
     )
     .then(async () => {
+     
       var late_temp =[];
       var absent_temp = [];
       var temp_leave = [];
@@ -913,7 +924,7 @@ routeExp.route("/filter").post(async function (req, res) {
       temp_leave.push([]);
       datestart == "" ? "" : datecount.push(1);
       dateend == "" ? "" : datecount.push(2);
-      searchit == "" ? delete session.request.search  : session.request.search = searchit;
+      searchit == "" ? delete filtrage.search  : filtrage.search = searchit;
       if (datecount.length == 2) {
         var day = moment
           .duration(
@@ -925,31 +936,31 @@ routeExp.route("/filter").post(async function (req, res) {
           var getdataabsence;
           var getdataleave;
         for (i = 0; i <= day; i++) {
-          session.request.date = datestart;
-          date_data.push(session.request.date);
+          filtrage.date = datestart;
+          date_data.push(filtrage.date);
          
-          if (session.request.search){
+          if (filtrage.search){
             getdata = await StatusSchema.find({$or: 
               [{ m_code: {'$regex':searchit,'$options' : 'i'} },
               { nom: {'$regex':searchit,'$options' : 'i'} },
-              { locaux: {'$regex':searchit,'$options' : 'i'}},],date:session.request.date,time_end:{ $ne: "" }}).sort({
+              { locaux: {'$regex':searchit,'$options' : 'i'}},],date:filtrage.date,time_end:{ $ne: "" }}).sort({
               "_id": -1,
             });
-            getdatalate = await LateSchema.find({date:session.request.date,validation:true}).sort({
+            getdatalate = await LateSchema.find({date:filtrage.date,validation:true}).sort({
               "_id": -1,
             });
-            getdataabsence = await AbsentSchema.find({date:session.request.date,validation:true}).sort({
+            getdataabsence = await AbsentSchema.find({date:filtrage.date,validation:true}).sort({
               "_id": -1,
             });
-            getdataleave = await LeaveSchema.find({date_start:session.request.date}).sort({
+            getdataleave = await LeaveSchema.find({date_start:filtrage.date}).sort({
               "_id": -1,
             });
           }
           else{
-            getdata = await StatusSchema.find({date:session.request.date,time_end:{ $ne: "" }});
-            getdatalate = await LateSchema.find({date:session.request.date,validation:true});
-            getdataabsence = await AbsentSchema.find({date:session.request.date,validation:true});
-            getdataleave = await LeaveSchema.find({date_start:session.request.date});
+            getdata = await StatusSchema.find({date:filtrage.date,time_end:{ $ne: "" }});
+            getdatalate = await LateSchema.find({date:filtrage.date,validation:true});
+            getdataabsence = await AbsentSchema.find({date:filtrage.date,validation:true});
+            getdataleave = await LeaveSchema.find({date_start:filtrage.date});
           }
           
           if (getdata.length != 0) {
@@ -981,91 +992,90 @@ routeExp.route("/filter").post(async function (req, res) {
             datatosend[0].push(datatosend[i][d]);
           }
         }
-       
         if (datatosend.length != 0){
-          session.datatowrite = datatosend[0];
-          session.datalate = late_temp[0];
-          session.dataabsence = absent_temp[0];
-          session.dataleave = temp_leave[0];
+          data_desired.datatowrite = datatosend[0];
+          data_desired.datalate = late_temp[0];
+          data_desired.dataabsence = absent_temp[0];
+          data_desired.dataleave = temp_leave[0];
           res.send(datatosend[0]);
         }
         else{
-          session.datatowrite = datatosend;
-          session.datalate = [];
-          session.dataabsence = [];
-          session.dataleave = [];
+          data_desired.datatowrite = datatosend;
+          data_desired.datalate = [];
+          data_desired.dataabsence = [];
+          data_desired.dataleave = [];
           res.send(datatosend);
         }
         
       } else if (datecount.length == 1) {
         if (datecount[0] == 1) {
-          session.request.date = datestart;
-          if (session.request.search){
+          filtrage.date = datestart;
+          if (filtrage.search){
             datatosend = await StatusSchema.find({$or: 
               [{ m_code: {'$regex':searchit,'$options' : 'i'} },
               { nom: {'$regex':searchit,'$options' : 'i'} },
-              { locaux: {'$regex':searchit,'$options' : 'i'}},],date:session.request.date,time_end:{ $ne: "" }}).sort({
+              { locaux: {'$regex':searchit,'$options' : 'i'}},],date:filtrage.date,time_end:{ $ne: "" }}).sort({
               "_id": -1,
             });
-            session.datalate = await LateSchema.find({date:session.request.date,validation:true}).sort({
+            data_desired.datalate = await LateSchema.find({date:filtrage.date,validation:true}).sort({
               "_id": -1,
             });
-            session.dataabsence = await AbsentSchema.find({date:session.request.date,validation:true}).sort({
+            data_desired.dataabsence = await AbsentSchema.find({date:filtrage.date,validation:true}).sort({
               "_id": -1,
             });
-            session.dataleave = await LeaveSchema.find({date_start:session.request.date}).sort({
+            data_desired.dataleave = await LeaveSchema.find({date_start:filtrage.date}).sort({
               "_id": -1,
             });
           }
           else{
-            datatosend = await StatusSchema.find({date:session.request.date,time_end:{ $ne: "" }});
-            session.datalate = await LateSchema.find({date:session.request.date,validation:true});
-            session.dataabsence = await AbsentSchema.find({date:session.request.date,validation:true});
-            session.dataleave = await LeaveSchema.find({date_start:session.request.date});
+            datatosend = await StatusSchema.find({date:filtrage.date,time_end:{ $ne: "" }});
+            data_desired.datalate = await LateSchema.find({date:filtrage.date,validation:true});
+            data_desired.dataabsence = await AbsentSchema.find({date:filtrage.date,validation:true});
+            data_desired.dataleave = await LeaveSchema.find({date_start:filtrage.date});
           }
-          session.datatowrite = datatosend;
+          data_desired.datatowrite = datatosend;
           session.searchit = searchit;
           res.send(datatosend);
         } else {
-          session.request.date = dateend;
-          if (session.request.search){
+          filtrage.date = dateend;
+          if (filtrage.search){
             datatosend = await StatusSchema.find({$or: 
               [{ m_code: {'$regex':searchit,'$options' : 'i'} },
               { nom: {'$regex':searchit,'$options' : 'i'} },
-              { locaux: {'$regex':searchit,'$options' : 'i'}},],date:session.request.date,time_end:{ $ne: "" }}).sort({
+              { locaux: {'$regex':searchit,'$options' : 'i'}},],date:filtrage.date,time_end:{ $ne: "" }}).sort({
               "_id": -1,
             });
-            session.datalate = await LateSchema.find({date:session.request.date,validation:true}).sort({
+            data_desired.datalate = await LateSchema.find({date:filtrage.date,validation:true}).sort({
               "_id": -1,
             });
-            session.dataabsence = await AbsentSchema.find({date:session.request.date,validation:true}).sort({
+            data_desired.dataabsence = await AbsentSchema.find({date:filtrage.date,validation:true}).sort({
               "_id": -1,
             });
-            session.dataleave = await LeaveSchema.find({date_start:session.request.date}).sort({
+            data_desired.dataleave = await LeaveSchema.find({date_start:filtrage.date}).sort({
               "_id": -1,
             });
           }
           else{
-            datatosend = await StatusSchema.find({date:session.request.date});
+            datatosend = await StatusSchema.find({date:filtrage.date});
           }
-          session.datatowrite = datatosend;
+          data_desired.datatowrite = datatosend;
           session.searchit = searchit;
           res.send(datatosend);
         }
       } else {
-        delete session.request.date;
+        delete filtrage.date;
         datatosend = await StatusSchema.find({$or: 
           [{ m_code: {'$regex':searchit,'$options' : 'i'} },
           { nom: {'$regex':searchit,'$options' : 'i'} },
           { locaux: {'$regex':searchit,'$options' : 'i'}},],time_end:{ $ne: "" }}).sort({"_id": -1,});
-        session.datatowrite = datatosend;
-        session.datalate = await LateSchema.find({validation:true}).sort({
+        data_desired.datatowrite = datatosend;
+        data_desired.datalate = await LateSchema.find({validation:true}).sort({
           "_id": -1,
         });
-        session.dataabsence = await AbsentSchema.find({validation:true}).sort({
+        data_desired.dataabsence = await AbsentSchema.find({validation:true}).sort({
           "_id": -1,
         });;
-        session.dataleave = await LeaveSchema.find({}).sort({
+        data_desired.dataleave = await LeaveSchema.find({}).sort({
           "_id": -1,
         });;
         session.searchit = searchit;
@@ -1154,6 +1164,7 @@ routeExp.route("/takeleave").post(async function (req, res) {
     var type = req.body.type;
     var leavestart = req.body.leavestart;
     var leaveend = req.body.leaveend;
+    var val = req.body.court;
     mongoose
   .connect(
     "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
@@ -1164,12 +1175,20 @@ routeExp.route("/takeleave").post(async function (req, res) {
   )
   .then(async () => {
     var user = await UserSchema.findOne({_id:userid});
-    if (await LeaveSchema.findOne({m_code:user.m_code,status:"on"})){
+    if (await LeaveSchema.findOne({m_code:user.m_code,status:"wait"})){
       res.send("already");
     }
     else{
-    if (user.leave_stat == "y" && (type == "Paid Leave" || type == "Time off without pay")){
-      var taked = date_diff(leavestart,leaveend);
+      var taked;
+      if (val == "n"){
+        taked = date_diff(leavestart,leaveend); 
+      }
+      else{
+        leavestart = moment().format("YYYY-MM-DD");
+        leaveend = moment().format("YYYY-MM-DD");
+        taked = val;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+      }
+    if (user.leave_stat == "y" && (type == "Congé Payé" || type == "Absent")){
       if (taked < user.remaining_leave){
     var new_leave = {
       m_code:user.m_code,
@@ -1177,35 +1196,36 @@ routeExp.route("/takeleave").post(async function (req, res) {
       nom:user.first_name + " "+ user.last_name,
       date_start:leavestart,
       date_end:leaveend,
+      duration:taked,
       type:type,
-      status:"on",
+      status:"wait",
       validation:false
     }
     await LeaveSchema(new_leave).save();
-    await UserSchema.findOneAndUpdate({_id:userid},{remaining_leave:(user.remaining_leave - taked),$inc:{leave_taked:taked},act_stat:"VACATION",act_loc:"Not defined"});
-    const io = req.app.get('io');
-    io.sockets.emit('status',"VACATION"+","+user.m_code);
+    if (type == "Congé Payé"){
+      await UserSchema.findOneAndUpdate({m_code:user.m_code},{$inc:{remaining_leave:-taked,leave_taked:taked}});
+    }
+    await conge_define(req,taked);
     res.send("Ok");
   }
   else{
     res.send("exceeds");
   }
   }
-  else if(type == "Sick Leave" || type == "Maternity / Paternity" ){
+  else if(type == "Mise a Pied" || type == "Permission exceptionelle" || type == "Repos Maladie" || type == "Congé de maternité"){
     var new_leave = {
       m_code:user.m_code,
       num_agent : user.num_agent,
       nom:user.first_name + " "+ user.last_name,
       date_start:leavestart,
       date_end:leaveend,
+      duration:taked,
       type:type,
-      status:"on",
+      status:"wait",
       validation:false
     }
     await LeaveSchema(new_leave).save();
-    await UserSchema.findOneAndUpdate({_id:userid},{act_stat:"VACATION",act_loc:"Not defined"});
-    const io = req.app.get('io');
-    io.sockets.emit('status',"VACATION"+","+user.m_code);
+    await conge_define(req,taked);
     res.send("Ok");
   }
   else{
@@ -1225,6 +1245,35 @@ async function leave_permission(user){
   )
   .then(async () => {
         await UserSchema.findOneAndUpdate({m_code:user},{remaining_leave:30,leave_stat:"y"});
+  })
+}
+async function conge_define(req,nbr){
+  mongoose
+  .connect(
+    "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
+    {
+      useUnifiedTopology: true,
+      UseNewUrlParser: true,
+    }
+  )
+  .then(async () => {
+    var all_leave = await LeaveSchema.find({status:"wait"});
+    for (i=0;i< all_leave.length;i++){
+      if (moment().format("YYYY-MM-DD") == all_leave[i].date_start){
+        if (nbr >= 1){
+          await UserSchema.findOneAndUpdate({m_code:all_leave[i].m_code},{act_stat:"VACATION",act_loc:"Not defined"});
+        await LeaveSchema.findOneAndUpdate({m_code:all_leave[i].m_code,date_start:moment().format("YYYY-MM-DD")},{status:"on"});
+        const io = req.app.get('io');
+        io.sockets.emit('status',"VACATION"+","+all_leave[i].m_code);
+        }
+        else{
+          await LeaveSchema.findOneAndUpdate({m_code:all_leave[i].m_code,date_start:moment().format("YYYY-MM-DD")},{status:"Done"});
+          const io = req.app.get('io');
+          io.sockets.emit('status',"VACATION"+","+all_leave[i].m_code);
+        }
+        
+      }
+  }
   })
 }
 //checkleave
@@ -1298,12 +1347,12 @@ routeExp.route("/generate").post(async function (req, res) {
     .then(async () => {
       
         var all_employes = [];
-        for (i=0;i<session.datatowrite.length;i++){
-           if (all_employes.includes(session.datatowrite[i].m_code)){
+        for (i=0;i<data_desired.datatowrite.length;i++){
+           if (all_employes.includes(data_desired.datatowrite[i].m_code)){
                 
            }
            else{
-             all_employes.push(session.datatowrite[i].m_code);
+             all_employes.push(data_desired.datatowrite[i].m_code);
         }
         all_employes = all_employes.sort();
         }
@@ -1360,7 +1409,7 @@ routeExp.route("/generate").post(async function (req, res) {
             "End Time",
             "Hour"
           ]);
-            generate_excel(session.datatowrite,session.datalate,session.dataabsence,session.dataleave,all_employes[e]);
+            generate_excel(data_desired.datatowrite,data_desired.datalate,data_desired.dataabsence,data_desired.dataleave,all_employes[e]);
           if (newsheet.SheetNames.includes(all_employes[e])) {
           } else {
             newsheet.SheetNames.push(all_employes[e]);
@@ -1383,10 +1432,10 @@ routeExp.route("/generate").post(async function (req, res) {
               num_file++;
             }
             ExcelFile.writeFile(newsheet, session.filename);
-          delete session.request.searchit;
-          delete session.request.date;
-          delete session.request.search;
-          session.datatowrite = await StatusSchema.find();
+          delete filtrage.searchit;
+          delete filtrage.date;
+          delete filtrage.search;
+          data_desired.datatowrite = await StatusSchema.find();
         }
       res.send("Done");
     });

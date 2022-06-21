@@ -14,7 +14,7 @@
       content="solumada-clocking"
     />
     <meta name="robots" content="noindex,nofollow" />
-    <title>Employees Status</title>
+    <title>Status des employees</title>
     <!-- Favicon icon -->
     <link
       rel="icon"
@@ -163,7 +163,7 @@
                           >
                           </span>
                           <div class="ms-2">
-                            <h5 class="mb-0">Notification today</h5>
+                            <h5 class="mb-0">Notification aujourd'hui</h5>
                           </div>
                         </div>
                       </a>
@@ -207,7 +207,7 @@
                 >
                   <div class="dropdown-divider"></div>
                   <a class="dropdown-item" href="/exit_a"
-                    ><i class="fa fa-power-off me-1 ms-1"></i> Logout</a
+                    ><i class="fa fa-power-off me-1 ms-1"></i> Déconnexion</a
                   >
                 </ul>
               </li>
@@ -255,7 +255,7 @@
                   href="/userlist"
                   aria-expanded="false"
                   ><i class="mdi mdi-account-key"></i
-                  ><span class="hide-menu">Users List</span></a
+                  ><span class="hide-menu">Liste utilisateurs</span></a
                 >
               </li>
               <li class="sidebar-item">
@@ -264,7 +264,7 @@
                   href="/details"
                   aria-expanded="false"
                   ><i class="mdi mdi-calendar-range"></i
-                  ><span class="hide-menu">Timesheets</span></a
+                  ><span class="hide-menu">Feuille de temps</span></a
                 >
               </li>
               <li class="sidebar-item">
@@ -273,19 +273,19 @@
                   href="javascript:void(0)"
                   aria-expanded="false"
                   ><i class="mdi mdi-clock-alert"></i
-                  ><span class="hide-menu">Late </span></a
+                  ><span class="hide-menu">Retard </span></a
                 >
                 <ul aria-expanded="false" class="collapse first-level">
                   <li class="sidebar-item">
                     <a href="/validelate" class="sidebar-link"
                       ><i class="mdi mdi-alarm-check"></i
-                      ><span class="hide-menu"> Validation of late </span></a
+                      ><span class="hide-menu"> Validation de retard </span></a
                     >
                   </li>
                   <li class="sidebar-item">
                     <a href="/latelist" class="sidebar-link"
                       ><i class="mdi mdi-format-list-bulleted"></i
-                      ><span class="hide-menu"> List of late </span></a
+                      ><span class="hide-menu"> List des retards </span></a
                     >
                   </li>
                  
@@ -297,19 +297,19 @@
                 href="javascript:void(0)"
                 aria-expanded="false"
                 ><i class="mdi mdi-account-card-details"></i
-                ><span class="hide-menu">Absence Or Leave work </span></a
+                ><span class="hide-menu">Absence ou Congé </span></a
               >
               <ul aria-expanded="false" class="collapse first-level">
                 <li class="sidebar-item">
                   <a href="/valideabsence" class="sidebar-link"
                     ><i class="mdi mdi-account-check"></i
-                    ><span class="hide-menu"> Validation of absence </span></a
+                    ><span class="hide-menu"> Validation des absences </span></a
                   >
                 </li>
                 <li class="sidebar-item">
                   <a href="/absencelist" class="sidebar-link"
                     ><i class="mdi mdi-format-list-bulleted"></i
-                    ><span class="hide-menu"> List of absence </span></a
+                    ><span class="hide-menu"> Liste des absences </span></a
                   >
                 </li>
                 </li>
@@ -319,19 +319,19 @@
                     href="javascript:void(0)"
                     aria-expanded="false"
                     ><i class="mdi mdi-account-off"></i
-                    ><span class="hide-menu">Leave from work </span></a
+                    ><span class="hide-menu">Congé </span></a
                   >
                   <ul aria-expanded="false" class="collapse first-level">
                     <li class="sidebar-item">
                       <a href="/leavelist" class="sidebar-link"
                         ><i class="mdi mdi-format-list-bulleted"></i
-                        ><span class="hide-menu">List of time off</span></a
+                        ><span class="hide-menu">List des conges ( global )</span></a
                       >
                     </li>
                     <li class="sidebar-item">
                       <a href="/leave" class="sidebar-link"
                         ><i class="mdi mdi-account-off"></i
-                        ><span class="hide-menu"> Define</span></a
+                        ><span class="hide-menu"> Definir un congé</span></a
                       >
                     </li>
                    
@@ -354,7 +354,7 @@
         <div class="page-breadcrumb">
           <div class="row">
             <div class="col-12 d-flex no-block align-items-center">
-              <h4 class="page-title">Status employees</h4><h4 style="color:#6273CF;margin-left:20px" id="clock" class="page-title">Mardi 13:00:15</h4>
+              <h4 class="page-title">Status des employees</h4><h4 style="color:#6273CF;margin-left:20px" id="clock" class="page-title">Mardi 13:00:15</h4>
               <div class="ms-auto text-end">
                 <nav aria-label="breadcrumb">
                   <ol class="breadcrumb">
@@ -377,7 +377,7 @@
             <div class="col-12">
               <div class="card">
                 <div class="card-body">
-                  <h5 class="card-title">List of employees</h5>
+                  <h5 class="card-title">List des employees</h5>
                   <button></button>
                   <div class="table-responsive">
                     <table
@@ -386,9 +386,9 @@
                     >
                       <thead>
                         <tr>
-                          <th>Employees Name</th>
+                          <th>Nom de l'employee</th>
                           <th>Locaux</th>
-                          <th>Function</th>
+                          <th>Fonction</th>
                           <th>Status</th>
                         </tr>
                       </thead>
@@ -406,12 +406,12 @@
                               <% } %>
                               <% if (user.act_stat == "WORKING") { %>
                                 <td><div id ="s <%= user.m_code %>" class="login102s-form-btn" >
-                                  <%= user.act_stat %> 
+                                 TRAVAILLER
                                 </div></td>
                               <% } %>
                               <% if (user.act_stat == "VACATION") { %>
                                 <td><div id ="s <%= user.m_code %>" class="login10lv-form-btn">
-                                  <%= user.act_stat %> 
+                                  CONGE
                                 </div></td>
                               <% } %>
                               <% if (user.act_stat != "WORKING" && user.act_stat != "NONE" && user.act_stat != "LEFTING" &&  user.act_stat != "VACATION") { %>
@@ -421,7 +421,7 @@
                               <% } %>
                               <% if (user.act_stat == "LEFTING") { %>
                                 <td><div id ="s <%= user.m_code %>" class="login10ls-form-btn" >
-                                  <%= user.act_stat %> 
+                                  PARTI
                                 </div></td>
                               <% } %>
                             </tr>
@@ -480,17 +480,17 @@
     var ch = document.getElementById("s "+id);
     if (msg[0] == "TRAVAILLER"){
         ch.setAttribute("class","login102s-form-btn");
-        ch.innerHTML = "WORKING";
+        ch.innerHTML = "TRAVAILLER";
 
     }
     else if (msg[0] == "LEFTING"){
       ch.setAttribute("class","login10ls-form-btn");
-      ch.innerHTML = "LEFTING";
+      ch.innerHTML = "PARTI";
       document.getElementById("l "+id).innerHTML ="Not defined";
     }
     else if (msg[0] == "VACATION"){
       ch.setAttribute("class","login10lv-form-btn");
-      ch.innerHTML = "VACATION";
+      ch.innerHTML = "CONGE";
       document.getElementById("l "+id).innerHTML ="Not defined";
     }
     else{
@@ -502,7 +502,7 @@
   socket.on('locaux', function(lc) {
     document.getElementById("l "+id).innerHTML = lc;
   });
-  var day = ["Sunday","Monday","Tuesday","Wednesday","Thiursday","Friday","Saturday"];
+  var day = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
   function clockRunner () {
     var datetime = day[new Date().getDay()]+ "  at  "+ new Date().toLocaleTimeString();
     clock.innerHTML = datetime;

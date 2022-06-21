@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Add User</title>
+	<title>Ajouter un utilisateur</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 <!--===============================================================================================-->	
@@ -31,7 +31,7 @@
 				</div>
 				<div  class="login100-form validate-form">
 					<span class="login100-form-title">
-						New User
+						Nouvelle utilisateur
 					</span>
 
 					<div class="wrap-input100 validate-input">
@@ -40,24 +40,24 @@
 						<span class="symbol-input100">
 							<i class="fa fa-user" aria-hidden="true"></i>
 						</span>
-                        <small id="em" style="color:red;display: none;">Email required includes @</small>
+                        <small id="em" style="color:red;display: none;">Email requis inclure @</small>
 					</div>
                     <div class="wrap-input100 validate-input">
-						<input class="input100" type="text" onkeyup="verify_fname()" id="fname" name="Name" placeholder="First Name">
+						<input class="input100" type="text" onkeyup="verify_fname()" id="fname" name="Name" placeholder="Nom">
 						<span class="focus-input100"></span>
 						<span class="symbol-input100">
 							<i class="fa fa-user" aria-hidden="true"></i>
 						</span>
-                        <small id="fn" style="color:red;display: none;">First name required</small>
+                        <small id="fn" style="color:red;display: none;">Nom requis</small>
 					</div>
 
                     <div class="wrap-input100 validate-input">
-						<input class="input100" type="text" onkeyup="verify_lname()" id="lname" name="LastName" placeholder="Last Name">
+						<input class="input100" type="text" onkeyup="verify_lname()" id="lname" name="LastName" placeholder="Prénom">
 						<span class="focus-input100"></span>
 						<span class="symbol-input100">
 							<i class="fa fa-user" aria-hidden="true"></i>
 						</span>
-                        <small id="ln" style="color:red;display: none;">Last name required</small>
+                        <small id="ln" style="color:red;display: none;">Prénom requis</small>
 					</div>
 					<div class="wrap-input100 validate-input">
 						<input class="input100" type="text" onkeyup="verify_code()" id="m_code" name="m_code" placeholder="M-CODE">
@@ -65,31 +65,31 @@
 						<span class="symbol-input100">
 							<i class="fa fa-user" aria-hidden="true"></i>
 						</span>
-                        <small id="co" style="color:red;display: none;">M-code required</small>
+                        <small id="co" style="color:red;display: none;">M-code requis</small>
 					</div>
 					<div class="wrap-input100 validate-input">
-						<input class="input100" type="text" onkeyup="verify_agent()" id="num_agent" name="num_agent" placeholder="NUMBER OF AGENT">
+						<input class="input100" type="text" onkeyup="verify_agent()" id="num_agent" name="num_agent" placeholder="Numéro d'agent">
 						<span class="focus-input100"></span>
 						<span class="symbol-input100">
 							<i class="fa fa-user" aria-hidden="true"></i>
 						</span>
-                        <small id="nu" style="color:red;display: none;">Num agent required</small>
+                        <small id="nu" style="color:red;display: none;">Numéro agent requis</small>
 					</div>
 					<div class="wrap-input100">
 						<select id="occup" class="input100" onchange="verify_occup()" style="border-color: transparent;">
-                            <option value="">Choose occupation</option>
-                            <option value="User">User</option>
-                            <option value="Admin">Administrator</option>
+                            <option value="">Choisir le type d'utilisateur</option>
+                            <option value="User">Utilisateur</option>
+                            <option value="Admin">Administrateur</option>
                         </select>
                         <span class="focus-input101"></span>
-                        <small id="oc" style="color:red;display: none;">Please choose one</small>
+                        <small id="oc" style="color:red;display: none;">Veuillez choisir</small>
 					</div>
 					<div class="wrap-input100">
 						<select id="shift" class="input100" onchange="verify_shift()" style="border-color: transparent;">
-                            <option value="">Choose SHIFT</option>
+                            <option value="">Choisir son fonction</option>
 							<option value="RH">RH</option>
 							<option value="MANAGER">MANAGER</option>
-							<option value="TL">TL</option>
+							<option value="TL">Team Leader</option>
                             <option value="SHIFT 1">SHIFT 1</option>
                             <option value="SHIFT 2">SHIFT 2</option>
 							<option value="SHIFT 3">SHIFT 3</option>
@@ -99,12 +99,12 @@
 							<option value="IT">IT</option>
                         </select>
                         <span class="focus-input101"></span>
-                        <small id="sh" style="color:red;display: none;">Please choose one</small>
+                        <small id="sh" style="color:red;display: none;">Veuillez choisir</small>
 					</div>
 					
 					<div class="container-login100-form-btn">
 						<button id="save" onclick="save()" class="login100-form-btn">
-							SAVE
+							ENREGISTRER
 						</button>
 					</div>
 					<div id="success" class="alert alert-success" role="alert" style="display: none;margin-top: 20px;">
@@ -116,7 +116,7 @@
 
 					<a href="/"><div class="text-center p-t-136">
 						<h1 class="txt2">
-							Back home <i class="fas fa-arrow-alt-circle-right"></i>
+							Retourner <i class="fas fa-arrow-alt-circle-right"></i>
 						</h1>
 					</div></a>
 				</div>

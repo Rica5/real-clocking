@@ -15,6 +15,8 @@ var adm = document.getElementById("adm");
 var occupation = document.getElementById("occupation");
 var info = document.getElementById("info");
 var ids = "";
+var dj = document.getElementById("demi");
+var oj = document.getElementById("one");
 function getdata(url,id) {
     var http = new XMLHttpRequest();
     http.open("POST", url, true);
@@ -34,34 +36,58 @@ function getdata(url,id) {
     http.send("id="+id);
   }
 function define_leave(){
-       if (type_leave.value == "" && datestart.value == "" && dateend.value == ""){
-            info.innerHTML = "Please fill all informations";
-            info.style.display = "block";
-       }
-       else{
-        take_leave("/takeleave",type_leave.value,datestart.value,dateend.value);
-       }
+    if (oj.checked || dj.checked){
+      if(oj.checked){
+        if (type_leave.value == ""){
+          info.innerHTML = "Veuillez remplir tous les informations";
+          info.style.display = "block";
+     }
+     else{
+      take_leave("/takeleave",type_leave.value,datestart.value,dateend.value,oj.value);
+     }
+      }
+      else{
+        if (type_leave.value == ""){
+          info.innerHTML = "Veuillez remplir tous les informations";
+          info.style.display = "block";
+     }
+     else{
+      take_leave("/takeleave",type_leave.value,datestart.value,dateend.value,dj.value);
+     }
+      }
+    }
+    else{
+      if (type_leave.value == "" && datestart.value == "" && dateend.value == ""){
+        info.innerHTML = "Veuillez remplir tous les informations";
+        info.style.display = "block";
+   }
+   else{
+    take_leave("/takeleave",type_leave.value,datestart.value,dateend.value,"n");
+   }
+      
+    }
+       
 }
-function take_leave(url,type,startings,endings) {
+function take_leave(url,type,startings,endings,val) {
     var http = new XMLHttpRequest();
     http.open("POST", url, true);
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     http.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
         if (this.responseText == "Ok"){
-          info.innerHTML = "Leave from work for " + username.textContent + " registered";
+          info.innerHTML = "Congé pour " + username.textContent + " enregistrés";
           info.style.display = "block";
         }
         else if (this.responseText == "not authorized"){
-          info.innerHTML = username.textContent + " not authorized to take this type of live from work";
+          info.innerHTML = username.textContent + " n'est pas autorisée a prendre ce type de congé";
           info.style.display = "block";
         }
         else if (this.responseText == "exceeds"){
-          info.innerHTML = username.textContent + " have not enough remaining leave";
+          info.innerHTML = username.textContent + " n'a pas assez de solde de congé";
           info.style.display = "block";
         }
         else if (this.responseText == "already"){
-          info.innerHTML = username.textContent + " is already on leave from work";
+          info.innerHTML = username.textContent + " est déja en congé";
           info.style.display = "block";
         }
         else{
@@ -70,5 +96,5 @@ function take_leave(url,type,startings,endings) {
       
       }
     };
-    http.send("id="+ids+"&type="+type+"&leavestart="+startings+"&leaveend="+endings);
+    http.send("id="+ids+"&type="+type+"&leavestart="+startings+"&leaveend="+endings+"&court="+val);
   }

@@ -14,7 +14,7 @@
       content="solumada-clocking"
     />
     <meta name="robots" content="noindex,nofollow" />
-    <title>Absence Validation</title>
+    <title>Validation des absences</title>
     <!-- Favicon icon -->
     <link
       rel="icon"
@@ -163,7 +163,7 @@
                           >
                           </span>
                           <div class="ms-2">
-                            <h5 class="mb-0">Notification today</h5>
+                            <h5 class="mb-0">Notification aujourd'hui</h5>
                           </div>
                         </div>
                       </a>
@@ -207,7 +207,7 @@
                 >
                   <div class="dropdown-divider"></div>
                   <a class="dropdown-item" href="/exit_a"
-                    ><i class="fa fa-power-off me-1 ms-1"></i> Logout</a
+                    ><i class="fa fa-power-off me-1 ms-1"></i> Déconnexion</a
                   >
                 </ul>
               </li>
@@ -255,7 +255,7 @@
                   href="/userlist"
                   aria-expanded="false"
                   ><i class="mdi mdi-account-key"></i
-                  ><span class="hide-menu">Users List</span></a
+                  ><span class="hide-menu">Liste utilisateurs</span></a
                 >
               </li>
               <li class="sidebar-item">
@@ -264,7 +264,7 @@
                   href="/details"
                   aria-expanded="false"
                   ><i class="mdi mdi-calendar-range"></i
-                  ><span class="hide-menu">Timesheets</span></a
+                  ><span class="hide-menu">Feuille de temps</span></a
                 >
               </li>
               <li class="sidebar-item">
@@ -273,19 +273,19 @@
                   href="javascript:void(0)"
                   aria-expanded="false"
                   ><i class="mdi mdi-clock-alert"></i
-                  ><span class="hide-menu">Late </span></a
+                  ><span class="hide-menu">Retard </span></a
                 >
                 <ul aria-expanded="false" class="collapse first-level">
                   <li class="sidebar-item">
                     <a href="/validelate" class="sidebar-link"
                       ><i class="mdi mdi-alarm-check"></i
-                      ><span class="hide-menu"> Validation of late </span></a
+                      ><span class="hide-menu"> Validation de retard </span></a
                     >
                   </li>
                   <li class="sidebar-item">
                     <a href="/latelist" class="sidebar-link"
                       ><i class="mdi mdi-format-list-bulleted"></i
-                      ><span class="hide-menu"> List of late </span></a
+                      ><span class="hide-menu"> List des retards </span></a
                     >
                   </li>
                  
@@ -297,19 +297,19 @@
                 href="javascript:void(0)"
                 aria-expanded="false"
                 ><i class="mdi mdi-account-card-details"></i
-                ><span class="hide-menu">Absence Or Leave work </span></a
+                ><span class="hide-menu">Absence ou Congé </span></a
               >
               <ul aria-expanded="false" class="collapse first-level">
                 <li class="sidebar-item">
                   <a href="/valideabsence" class="sidebar-link"
                     ><i class="mdi mdi-account-check"></i
-                    ><span class="hide-menu"> Validation of absence </span></a
+                    ><span class="hide-menu"> Validation des absences </span></a
                   >
                 </li>
                 <li class="sidebar-item">
                   <a href="/absencelist" class="sidebar-link"
                     ><i class="mdi mdi-format-list-bulleted"></i
-                    ><span class="hide-menu"> List of absence </span></a
+                    ><span class="hide-menu"> Liste des absences </span></a
                   >
                 </li>
                 </li>
@@ -319,19 +319,19 @@
                     href="javascript:void(0)"
                     aria-expanded="false"
                     ><i class="mdi mdi-account-off"></i
-                    ><span class="hide-menu">Leave from work </span></a
+                    ><span class="hide-menu">Congé </span></a
                   >
                   <ul aria-expanded="false" class="collapse first-level">
                     <li class="sidebar-item">
                       <a href="/leavelist" class="sidebar-link"
                         ><i class="mdi mdi-format-list-bulleted"></i
-                        ><span class="hide-menu">List of time off</span></a
+                        ><span class="hide-menu">List des conges (global)</span></a
                       >
                     </li>
                     <li class="sidebar-item">
                       <a href="/leave" class="sidebar-link"
                         ><i class="mdi mdi-account-off"></i
-                        ><span class="hide-menu"> Define</span></a
+                        ><span class="hide-menu"> Definir un congé</span></a
                       >
                     </li>
                    
@@ -354,7 +354,7 @@
         <div class="page-breadcrumb">
           <div class="row">
             <div class="col-12 d-flex no-block align-items-center">
-              <h4 class="page-title">Absence User Lists</h4>
+              <h4 class="page-title">List des absences a valider</h4>
               <div class="ms-auto text-end">
                 <nav aria-label="breadcrumb">
                   <ol class="breadcrumb">
@@ -382,7 +382,7 @@
             <div class="col-12">
               <div class="card">
                 <div class="card-body">
-                  <h5 class="card-title">List of user late</h5>
+                  <h5 class="card-title">List des absences</h5>
                   <div class="table-responsive">
                     <table
                       id="zero_config"
@@ -390,11 +390,11 @@
                     >
                       <thead>
                         <tr>
-                          <th>Username</th>
+                          <th>Nom & prénom</th>
                           <th>Date</th>
-                          <th>Time</th>
-                          <th>Return at</th>
-                          <th>Reason</th>
+                          <th>Début</th>
+                          <th>Fin</th>
+                          <th>Raison</th>
                           <th>Actions</th>
                         </tr>
                       </thead>

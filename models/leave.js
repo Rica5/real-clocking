@@ -6,8 +6,9 @@ const Leave = mongoose.Schema({
     nom:String,
     date_start:String,
     date_end:String,
+    duration:Number,
     type:String,
     status:String,
     validation:Boolean
 })
-module.exports = mongoose.model('cleave',Leave);
+module.exports = mongoose.model('cleaveTest',Leave);
