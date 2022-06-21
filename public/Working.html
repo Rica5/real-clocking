@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Definir status</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->	
+<link rel="icon" type="image/png" href="/assets/images1/logo.jpg"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/assets/vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/assets/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/assets/vendor/animate/animate.css">
+<!--===============================================================================================-->	
+	<link rel="stylesheet" type="text/css" href="/assets/vendor/css-hamburgers/hamburgers.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/assets/vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/assets/css1/util.css">
+	<link rel="stylesheet" type="text/css" href="/assets/css1/main.css">
+<!--===============================================================================================-->
+</head>
+<body>
+	
+	<div class="limiter" id="login">
+		<div class="container-login100">
+			<div class="wrap-login100">
+                <div>
+					<img width="100%" height="100%" src="assets/images1/ls.jpg" alt="IMG">
+				</div>
+				<div class="login101-pic">
+                    <img style="border-radius: 50%;" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/529582/img_avatar3.png" alt="IMG">
+                    <span class="login100-form-title" style="margin-top: 20px;">
+                        <%= user.first_name %>  <%= user.last_name %>
+                    </span>
+					<div class="text-center ">
+						<a href="/exit_u"><button class="login10l-form-btn">
+							DECONNEXION
+						</button></a>
+					</div>
+                </div>
+				
+
+				<div  class="login100-form validate-form">
+                    <span id="time" class="login100-form-title">
+						
+					</span>
+					<span class="login100-form-title">
+						Definissez votre status
+					</span>
+					<div id = "forgetpage">
+						<div id="forget" style="display:block;margin-top: 20px;" class="alert alert-info" role="alert">
+							Vous avez oublie de cliquer sur parti
+						  </div>
+						  <div class="wrap-input100 validate-input">
+							<label for="exampleFormControlTextarea1" class="form-label">Vous avez quitté le travail a :   </label>
+							<input type="time" id="timeforget">
+							</textarea>
+
+						</div>
+						<div class="wrap-input100 validate-input">
+							<button id="bntsf" onclick="timeforget()" class="login100-form-btn">
+								ENVOYER
+							</button>
+						</div></div>
+					<div id = "latepage">
+						<div id="late" style="display:block;margin-top: 20px;" class="alert alert-info" role="alert">
+							Vous etes en retard de <%= retard %> 
+						  </div>
+						  <div class="wrap-input100 validate-input">
+							<label for="exampleFormControlTextarea1" class="form-label">La raison de votre retard :</label>
+							<textarea id="latereason" style="background: rgba(30, 152, 233, 0.5)" class="form-control">
+							</textarea>
+
+						</div>
+						<div class="wrap-input100 validate-input">
+							<button id="bntsr" onclick="reason()" class="login100-form-btn">
+								ENVOYER
+							</button>
+						</div></div>
+						<div id="statpage">
+					<div class="wrap-input100 validate-input">
+						
+					<select id="locaux" class="input100" onchange="passed()" style="border-color: transparent;">
+						<option value="Not defined">Ou vous etes</option>
+						<option value="Tana Water Front">Tana Water Front</option>
+						<option value="IKANO">IKANO</option>
+						<option value="Travaille a domicile">Travaille a domicile</option>
+						<option value="En dehors du bureau"> En dehors du bureau</option>
+					</select>
+					<br>
+					<select id="hour" class="input100" onchange="passed()" style="border-color: transparent;">
+						<option value="">Choose Hour</option>
+						<option value="6">6 hours</option>
+						<option value="8">8 hours</option>
+						<option value="10">10 hours</option>
+					</select>
+					<div id="info" style="display:none;margin-top: 20px;" class="alert alert-info" role="alert">
+                        Here is an information
+                      </div>
+				</div>
+					<div class="wrap-input100 validate-input">
+						<button id="w" onclick="working()" class="login100-form-btn">
+							TRAVAILLER
+						</button>
+					</div>
+                    <div class="wrap-input100">
+						<select id="a" class="login10a-form-btn text-center" onchange="away()" style="border-color: transparent;">
+							<option value="">ABSENT(E)</option>
+							<option value="BREAK">Petit Break</option>
+							<option value="DEJEUNER">Parti dejeuner</option>
+							<option value="PAUSE">Parti en pause</option>
+							<option value="ABSENT">Autre raison</option>
+						</select>
+						<div id="abr" class="wrap-input100 validate-input" style="display: none;">
+							<label for="exampleFormControlTextarea1" class="form-label">La raison de votre absence :</label>
+							<textarea id="awayreason" style="background: rgba(30, 152, 233, 0.5)" class="form-control">	
+							</textarea>
+							<div class="row my-2">
+								<div class="col-md-6">
+									<button id="btnarp" onclick="away_complete()" class="login102s-form-btn float-left">
+										PARTI
+									</button>
+								</div>
+							</div>
+							
+						</div>
+				</div>
+                    <div class="wrap-input100 validate-input">
+						<button id="l" onclick="left()" class="login10l-form-btn">
+							PARTI
+						</button>
+					</div>
+                    <br>
+                    <span class="login100-form-title">
+						STATUS ACTUEL
+					</span>
+                    <div class="wrap-input100 validate-input">
+                        <center>
+						<button id="s" class="login101-form-btn">
+							
+						</button>
+                    </center>
+					</div>
+				</div>
+				<div id="denie" class="alert alert-danger" role="alert" style="display: none;margin-top: 20px;">
+					  
+				</div>
+				
+					<div class="text-center p-t-136">
+						<h1 class="txt2">
+							Application Solumada, Copyright 2022
+						</h1>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="/js_code/socket.js"></script>
+	<script src="/js_code/timecontrole.js"></script>
+	<script src="/assets/js1/workin.js"></script>
+<script>
+  var retard = '<%= retard %>';
+  var forget = '<%= forget %>';
+  var user_occup ='<%= user.shift %>';
+  var forgetpage = document.getElementById("forgetpage");
+  var latepage = document.getElementById("latepage");
+  var statpage = document.getElementById("statpage");
+  var abr = document.getElementById("abr");
+  var btnars = document.getElementById("btnars");
+  var btnarc = document.getElementById("btnarc");
+  var err = document.getElementById("denie");
+  var get_hours = false;
+  if (forget == "y"){
+		forgetpage.style.display = "block";
+		latepage.style.display = "none";
+		statpage.style.display  = "none";
+  }
+  else{
+	forgetpage.style.display = "none";
+	if (retard == "n"){
+		latepage.style.display = "none";
+	}
+	else{
+		statpage.style.display  = "none";
+	}
+  }
+  
+  var socket = io();
+  var locatenow = document.getElementById("locaux");
+  var hour_today = document.getElementById("hour");
+  if (user_occup.includes("SHIFT")){
+
+}
+else{
+	hour_today.value = "none";
+	hour_today.style.display = "none";
+	get_hours = true;
+}
+  var locaux = "<%= user.act_loc %>";
+  document.getElementById("locaux").value = locaux;
+  var awaystat = false;
+  var status = "<%= user.act_stat %>";
+  if (status == "WORKING" ){
+	  awaystat = true;
+	  hour_today.style.display = "none";
+	workings();
+	document.getElementById("s").innerHTML = "TRAVAILLER";
+  }
+  else if(status == "LEFTING"){
+	lefts();
+	w.style.display = "none";
+		a.style.display = "none";
+		l.style.display = "none";
+	document.getElementById("s").innerHTML = "NON DEFINI";
+  }
+  else{
+	awaystat = true;
+	hour_today.style.display = "none";
+	aways();
+	document.getElementById("s").innerHTML = status;
+	a.value = status;
+  }
+  
+  function working(){
+	  a.value ="";
+	  hour_today.style.display = "none";
+	  workings();
+	 
+	  if (awaystat == false){
+		senddata1();
+	  }
+	  else{
+		take_break();
+	}
+	  awaystat = false;
+	  sendstatus(locatenow.value,"WORKING");
+  }
+  function left(){
+	senddata2(document.getElementById("locaux").value);
+	lefts();
+	awaystat = false;
+	sendstatus("Not defined","LEFTING");
+}
+function away(){
+	hour_today.style.display = "none";
+	if(a.value == "ABSENT"){
+		abr.style.display = "block";
+	}
+	else{
+		awaystat = true;
+		abr.style.display = "none";
+	aways();
+	sendstatus(locatenow.value,a.value);
+	}
+}
+function sendstatus(loc,stat){
+    var http = new XMLHttpRequest();
+    http.open("POST", "/statuschange", true);
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+          if (this.responseText == "error"){
+             window.location = "/session_end";
+          }
+          else{
+			switch(this.responseText){
+				case "WORKING" :  socket.emit("actuel","TRAVAILLER"+','+'<%= user.m_code %>');
+				socket.emit("loc",document.getElementById("locaux").value);break;
+				case "LEFTING" : socket.emit("actuel","LEFTING"+','+'<%= user.m_code %>');break;
+				default : socket.emit("actuel",a.value+','+'<%= user.m_code %>');senddata3(a.value);break;
+			}
+          }
+          
+      }
+    };
+    http.send("act_loc="+loc+"&act_stat="+stat);
+}
+var latereason = document.getElementById("latereason");
+function reason(){
+    if (latereason.value.trim() != ""){
+		err.style.display = "none";
+        sendreason("/reason",latereason.value.trim());
+    }
+	else{
+		err.innerHTML = "Le champ ne peut pas être vide";
+		err.style.display = "block";
+	}
+}
+var timeforgets = document.getElementById("timeforget");
+function timeforget(){
+	if (timeforgets.value != ""){
+		err.style.display = "none";
+		forgettime("/forget",timeforgets.value);
+	}
+	else{
+		err.innerHTML = "Le champ ne peut pas être vide";
+		err.style.display = "block";
+	}
+}
+function take_break(){
+	var http = new XMLHttpRequest();
+    http.open("POST", "/takebreak", true);
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.onreadystatechange = function () {
+    };
+    http.send();
+}
+function sendreason(url,reasons) {
+    var http = new XMLHttpRequest();
+    http.open("POST", url, true);
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        latepage.style.display = "none";
+		statpage.style.display = "block";
+      }
+    };
+    http.send("reason="+reasons);
+  }
+function passed(){
+	if (locatenow.value != "Not defined" && hour_today.value != ""){
+		w.style.display = "block";
+		a.style.display = "block";
+		l.style.display = "block";
+		a.disabled = true;
+		l.disabled = true;
+		sendhour("/gethour",hour_today.value);
+	}
+	else{
+		if (get_hours){
+			w.style.display = "block";
+		a.style.display = "block";
+		l.style.display = "block";
+		a.disabled = true;
+		l.disabled = true;
+		}
+		else{
+			w.style.display = "none";
+		a.style.display = "none";
+		l.style.display = "none";
+		}
+	}
+}
+var awayreason = document.getElementById("awayreason");
+function away_complete(){
+	if(awayreason.value.trim() != ""){
+		err.style.display = "none";
+		sendawayreason("/absent",awayreason.value.trim(),"complete");
+	}
+	else{
+		err.innerHTML = "Le champ ne peut pas être vide";
+		err.style.display = "block";
+	}
+	
+}
+function sendawayreason(url,areasons,stat) {
+    var http = new XMLHttpRequest();
+    http.open("POST", url, true);
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+		  if(this.responseText == "complete"){
+			l.click();
+		  }
+		  else if (this.responseText == "error"){
+			window.location = "/session_end";
+		  }
+      }
+    };
+    http.send("reason="+areasons+"&stat="+stat);
+  }
+  function sendhour(url,ht) {
+    var http = new XMLHttpRequest();
+    http.open("POST", url, true);
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+		 
+      }
+    };
+    http.send("hour="+ht);
+  }
+  function forgettime(url,tf) {
+    var http = new XMLHttpRequest();
+    http.open("POST", url, true);
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+		  if(this.responseText == "No"){
+			err.innerHTML = "L'heure dépasse votre heure de travail";
+			err.style.display = "block";
+		  }
+		  else if (this.responseText == "error"){
+			window.location = "/session_end";
+		  }
+		  else{
+			window.location = "/employee";
+		  }
+      }
+    };
+    http.send("timeforget="+tf);
+  }
+</script>
+	<script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/assets/vendor/bootstrap/js/popper.js"></script>
+	<script src="/assets/vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/assets/vendor/select2/select2.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/assets/vendor/tilt/tilt.jquery.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/assets/js1/main.js"></script>
+	
+</body>
+</html>
