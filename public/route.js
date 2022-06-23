@@ -21,6 +21,7 @@ var notification = [];
 var data_desired = {};
 var filtrage = {};
 var access = ["SHIFT 1","SHIFT 2","SHIFT WEEKEND","DEV"];
+var deduire = ["Mise a Pied","Absent"];
 
 //Mailing
 var transporter = nodemailer.createTransport({
@@ -1186,6 +1187,7 @@ routeExp.route("/takeleave").post(async function (req, res) {
     var leavestart = req.body.leavestart;
     var leaveend = req.body.leaveend;
     var val = req.body.court;
+    var deduction = " ( rien à deduire )";
     mongoose
   .connect(
     "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
@@ -1218,6 +1220,9 @@ routeExp.route("/takeleave").post(async function (req, res) {
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
       }
     if (user.leave_stat == "y" && (type == "Congé Payé" || type == "Absent")){
+      if (deduire.includes(type)){
+        deduction = " ( a déduire sur salaire )";
+      }
       if (taked < user.remaining_leave){
     var new_leave = {
       m_code:user.m_code,
@@ -1226,7 +1231,7 @@ routeExp.route("/takeleave").post(async function (req, res) {
       date_start:leavestart,
       date_end:leaveend,
       duration:taked,
-      type:type,
+      type:type + deduction,
       status:"wait",
       validation:false
     }
