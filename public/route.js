@@ -1980,14 +1980,14 @@ function generate_excel(datatowrites,retard,absent,conge,code) {
           conge[i].num_agent,
           conge[i].date_start,
           conge[i].date_end,
-          conge[i].duration + "jour(s)",
+          conge[i].duration + " jour(s)",
           conge[i].type,
         ];
         data.push(lateligne);
         cumg += date_diff(conge[i].date_start,conge[i].date_end);
     }
   }
-    data.push(["", "", "", "TOTAL", cumg + "days"]);
+    data.push(["", "", "","", "TOTAL", cumg + " jour(s)"]);
   }
   each_data = [
     nom,
