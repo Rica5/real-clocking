@@ -14,7 +14,7 @@
       content="solumada-clocking"
     />
     <meta name="robots" content="noindex,nofollow" />
-    <title>Liste des congés</title>
+    <title>Status des employees</title>
     <!-- Favicon icon -->
     <link
       rel="icon"
@@ -35,8 +35,7 @@
     <link rel="stylesheet" type="text/css" href="/assets/css1/main.css">
     <link rel="stylesheet" href="assets/libs/bootstrap/dist/css/bootstrap.css">
     <link href="../dist/css/style.min.css" rel="stylesheet" />
-    
-    <link rel="stylesheet" href="assets/magnific-popup/magnific-popup.css">
+   
   </head>
 
   <body>
@@ -207,7 +206,7 @@
                   aria-labelledby="navbarDropdown"
                 >
                   <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="/exit_a"
+                  <a class="dropdown-item" href="/exit_tl"
                     ><i class="fa fa-power-off me-1 ms-1"></i> Déconnexion</a
                   >
                 </ul>
@@ -232,15 +231,6 @@
           <!-- Sidebar navigation-->
           <nav class="sidebar-nav" >
             <ul id="sidebarnav" class="pt-4">
-                <li class="sidebar-item">
-                    <a
-                      class="sidebar-link waves-effect waves-dark sidebar-link"
-                      href="/home"
-                      aria-expanded="false"
-                      ><i class="mdi mdi-view-dashboard"></i
-                      ><span class="hide-menu">Dashboard</span></a
-                    >
-                  </li>
               <li class="sidebar-item">
                 <a
                   class="sidebar-link waves-effect waves-dark sidebar-link"
@@ -250,93 +240,6 @@
                   ><span class="hide-menu">Status</span></a
                 >
               </li>
-              <li class="sidebar-item">
-                <a
-                  class="sidebar-link waves-effect waves-dark sidebar-link"
-                  href="/userlist"
-                  aria-expanded="false"
-                  ><i class="mdi mdi-account-key"></i
-                  ><span class="hide-menu">Liste utilisateurs</span></a
-                >
-              </li>
-              <li class="sidebar-item">
-                <a
-                  class="sidebar-link waves-effect waves-dark sidebar-link"
-                  href="/details"
-                  aria-expanded="false"
-                  ><i class="mdi mdi-calendar-range"></i
-                  ><span class="hide-menu">Feuille de temps</span></a
-                >
-              </li>
-              <li class="sidebar-item">
-                <a
-                  class="sidebar-link has-arrow waves-effect waves-dark"
-                  href="javascript:void(0)"
-                  aria-expanded="false"
-                  ><i class="mdi mdi-clock-alert"></i
-                  ><span class="hide-menu">Retard </span></a
-                >
-                <ul aria-expanded="false" class="collapse first-level">
-                  <li class="sidebar-item">
-                    <a href="/validelate" class="sidebar-link"
-                      ><i class="mdi mdi-alarm-check"></i
-                      ><span class="hide-menu"> Validation de retard </span></a
-                    >
-                  </li>
-                  <li class="sidebar-item">
-                    <a href="/latelist" class="sidebar-link"
-                      ><i class="mdi mdi-format-list-bulleted"></i
-                      ><span class="hide-menu"> List des retards </span></a
-                    >
-                  </li>
-                 
-                  </li>
-            </ul>
-            <li class="sidebar-item">
-              <a
-                class="sidebar-link has-arrow waves-effect waves-dark"
-                href="javascript:void(0)"
-                aria-expanded="false"
-                ><i class="mdi mdi-account-card-details"></i
-                ><span class="hide-menu">Absence ou Congé </span></a
-              >
-              <ul aria-expanded="false" class="collapse first-level">
-                <li class="sidebar-item">
-                  <a href="/valideabsence" class="sidebar-link"
-                    ><i class="mdi mdi-account-check"></i
-                    ><span class="hide-menu"> Validation des absences </span></a
-                  >
-                </li>
-                <li class="sidebar-item">
-                  <a href="/absencelist" class="sidebar-link"
-                    ><i class="mdi mdi-format-list-bulleted"></i
-                    ><span class="hide-menu"> Liste des absences </span></a
-                  >
-                </li>
-                </li>
-                <li class="sidebar-item">
-                  <a
-                    class="sidebar-link has-arrow waves-effect waves-dark"
-                    href="javascript:void(0)"
-                    aria-expanded="false"
-                    ><i class="mdi mdi-account-off"></i
-                    ><span class="hide-menu">Congé </span></a
-                  >
-                  <ul aria-expanded="false" class="collapse first-level">
-                    <li class="sidebar-item">
-                      <a href="/leavelist" class="sidebar-link"
-                        ><i class="mdi mdi-format-list-bulleted"></i
-                        ><span class="hide-menu">List des conges (global)</span></a
-                      >
-                    </li>
-                    <li class="sidebar-item">
-                      <a href="/leave" class="sidebar-link"
-                        ><i class="mdi mdi-account-off"></i
-                        ><span class="hide-menu"> Definir un congé</span></a
-                      >
-                    </li>
-                   
-                    </li>
           </nav>
           <!-- End Sidebar navigation -->
         </div>
@@ -355,13 +258,13 @@
         <div class="page-breadcrumb">
           <div class="row">
             <div class="col-12 d-flex no-block align-items-center">
-              <h4 class="page-title">Liste des congés</h4>
+              <h4 class="page-title">Status des employees</h4><h4 style="color:#6273CF;margin-left:20px" id="clock" class="page-title">Mardi 13:00:15</h4>
               <div class="ms-auto text-end">
                 <nav aria-label="breadcrumb">
                   <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="#">Liste des congés</a></li>
+                    <li class="breadcrumb-item"><a href="#">Employees</a></li>
                     <li class="breadcrumb-item active" aria-current="page">
-                      Employee
+                      Status
                     </li>
                   </ol>
                 </nav>
@@ -369,12 +272,7 @@
             </div>
           </div>
         </div>
-        <!-- ============================================================== -->
-        <!-- End Bread crumb and right sidebar toggle -->
-        <!-- ============================================================== -->
-        <!-- ============================================================== -->
-        <!-- Container fluid  -->
-        <!-- ============================================================== -->
+        
         <div class="container-fluid">
           <!-- ============================================================== -->
           <!-- Start Page Content -->
@@ -383,12 +281,8 @@
             <div class="col-12">
               <div class="card">
                 <div class="card-body">
-                  <div class="row">
-                    <div class="col-sm-6 pull-left">
-                        <h2>Congé</h2>
-                    </div>
-                  </div>
-                  <br>
+                  <h5 class="card-title">List des employees</h5>
+                  <button></button>
                   <div class="table-responsive">
                     <table
                       id="zero_config"
@@ -396,33 +290,51 @@
                     >
                       <thead>
                         <tr>
-                          <th>Nom & prénom</th>
-                          <th>Date début</th>
-                          <th>Date fin</th>
-                          <th>Nombre de jour</th>
-                          <th>Type</th>
+                          <th>Nom de l'employee</th>
+                          <th>Locaux</th>
+                          <th>Fonction</th>
                           <th>Status</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <% leavelist.forEach(function(leavelist) { %>
+                        <% users.forEach(function(user) { %>
+                          <% if (user.occupation == "User") { %>
                             <tr>
-                                <td><%= leavelist.nom %></td>
-                                <td><%= leavelist.date_start %></td>
-                                <td><%= leavelist.date_end %></td>
-                                <td><%= leavelist.duration %></td>
-                                <td><%= leavelist.type %></td>
-                                <td><%= leavelist.status %></td>
-                            </tr>		   
-                      <% }); %>
+                              <td align="center"><%= user.first_name %> <%= user.last_name %></td>
+                              <td id ="l <%= user.m_code %>"><%= user.act_loc %> </td>
+                              <td><%= user.shift %> </td>
+                              <% if (user.act_stat == "NONE") { %>
+                                <td><div id ="s <%= user.m_code %>" class="login10ls-form-btn" >
+                                  NONE
+                                </div></td>
+                              <% } %>
+                              <% if (user.act_stat == "WORKING") { %>
+                                <td><div id ="s <%= user.m_code %>" class="login102s-form-btn" >
+                                 TRAVAILLER
+                                </div></td>
+                              <% } %>
+                              <% if (user.act_stat == "VACATION") { %>
+                                <td><div id ="s <%= user.m_code %>" class="login10lv-form-btn">
+                                  CONGE
+                                </div></td>
+                              <% } %>
+                              <% if (user.act_stat != "WORKING" && user.act_stat != "NONE" && user.act_stat != "LEFTING" &&  user.act_stat != "VACATION") { %>
+                                <td><div id ="s <%= user.m_code %>" class="login10as-form-btn" >
+                                  <%= user.act_stat %> 
+                                </div></td>
+                              <% } %>
+                              <% if (user.act_stat == "LEFTING") { %>
+                                <td><div id ="s <%= user.m_code %>" class="login10ls-form-btn" >
+                                  PARTI
+                                </div></td>
+                              <% } %>
+                            </tr>
+                            <% } else { %>
+                          <% } %>
+                          
+                               
+                          <% }); %>
                       </tbody>
-                      <!-- <tfoot>
-                        <tr>
-                          <th>Name</th>
-                          <th>Position</th>
-                          <th>Office</th>
-                        </tr>
-                      </tfoot> -->
                     </table>
                   </div>
                 </div>
@@ -460,6 +372,104 @@
     <!-- ============================================================== -->
     <!-- All Jquery -->
     <!-- ============================================================== -->
+    <script src="/js_code/socket.js"></script>
+<script>
+  var clock = document.getElementById("clock");
+  var socket = io();
+  var id ="";
+  const audio = new Audio("ring.wav");
+  socket.on('status', function(msg) {
+    msg = msg.split(",");
+    id =msg[1];
+    var ch = document.getElementById("s "+id);
+    if (msg[0] == "TRAVAILLER"){
+        ch.setAttribute("class","login102s-form-btn");
+        ch.innerHTML = "TRAVAILLER";
+
+    }
+    else if (msg[0] == "LEFTING"){
+      ch.setAttribute("class","login10ls-form-btn");
+      ch.innerHTML = "PARTI";
+      document.getElementById("l "+id).innerHTML ="Not defined";
+    }
+    else if (msg[0] == "VACATION"){
+      ch.setAttribute("class","login10lv-form-btn");
+      ch.innerHTML = "CONGE";
+      document.getElementById("l "+id).innerHTML ="Not defined";
+    }
+    else{
+      ch.setAttribute("class","login10as-form-btn");
+      ch.innerHTML = msg[0];
+     
+    }
+  });
+  socket.on('locaux', function(lc) {
+    document.getElementById("l "+id).innerHTML = lc;
+  });
+  var day = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+  function clockRunner () {
+    var datetime = day[new Date().getDay()]+ "  at  "+ new Date().toLocaleTimeString();
+    clock.innerHTML = datetime;
+    setTimeout(clockRunner, 1000);
+  }
+  socket.on('notif', function(msg) {
+    setnotification(msg);
+     audio.play();
+ })
+ var notif = '<%= notif %>'.split(",");
+ function setnotification(all_notifications){
+  var notif = '<li>'+
+    '<div class="">'+
+      '<a href="javascript:void(0)" class="link border-top">'+
+        '<div class="d-flex no-block align-items-center p-10">'+
+          '<span'+
+           ' class="'+
+              'btn btn-success btn-circle'+
+              'd-flex'+
+              'align-items-center'+
+              'justify-content-center"'+
+            
+            '><i id="ring"  class="mdi mdi-bell text-white fs-4"></i>'+
+          '</span>'+
+          '<div class="ms-2">'+
+            '<span id="alert" class="mail-desc"'+
+              '>Here is a notification for today</span></div></div></a></div></li>';
+  for (i=0;i<all_notifications.length;i++){
+    if (i != 8 && all_notifications[all_notifications.length - (i+1)]  != ""){
+      notif += '<li>'+
+        '<div class="">'+
+          '<a href="javascript:void(0)" class="link border-top">'+
+            '<div class="d-flex no-block align-items-center p-10">'+
+              '<span'+
+               ' class="'+
+                  'btn btn-warning btn-circle'+
+                  'd-flex'+
+                  'align-items-center'+
+                  'justify-content-center"'+
+                
+                '><i id="ring"  class="mdi mdi-bell text-white fs-4"></i>'+
+              '</span>'+
+              '<div class="ms-2">'+
+                '<span id="alert" class="mail-desc"'+
+                  '>'+all_notifications[all_notifications.length - (i+1)]+'</span></div></div></a></div></li>';
+    } 
+    else{
+      break;
+    }
+  }
+  document.getElementById("card-notif").innerHTML = notif;
+  if (all_notifications[0] != ""){
+        document.getElementById("nbr-notif").innerHTML = all_notifications.length;
+      }
+      else{
+        document.getElementById("nbr-notif").innerHTML = all_notifications.length - 1;
+      }
+}
+setnotification(notif);
+  
+  window.onload = clockRunner();
+
+</script>
     <script src="../assets/libs/jquery/dist/jquery.min.js"></script>
     <!-- Bootstrap tether Core JavaScript -->
     <script src="../assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
@@ -476,73 +486,11 @@
     <script src="../assets/extra-libs/multicheck/datatable-checkbox-init.js"></script>
     <script src="../assets/extra-libs/multicheck/jquery.multicheck.js"></script>
     <script src="../assets/extra-libs/DataTables/datatables.min.js"></script>
-    <script src="assets/magnific-popup/magnific-popup.js"></script>
-    <script src="assets/js1/examples.modals.js"></script>
-    <script src="/js_code/socket.js"></script>
-    <script>
-      var notif = '<%= notif %>'.split(",");
-      var socket = io();
-      const audio = new Audio("ring.wav");
-      socket.on('notif', function(msg) {
-        setnotification(msg);
-         audio.play();
-     })
-     function setnotification(all_notifications){
-        var notif = '<li>'+
-          '<div class="">'+
-            '<a href="javascript:void(0)" class="link border-top">'+
-              '<div class="d-flex no-block align-items-center p-10">'+
-                '<span'+
-                 ' class="'+
-                    'btn btn-success btn-circle'+
-                    'd-flex'+
-                    'align-items-center'+
-                    'justify-content-center"'+
-                  
-                  '><i id="ring"  class="mdi mdi-bell text-white fs-4"></i>'+
-                '</span>'+
-                '<div class="ms-2">'+
-                  '<span id="alert" class="mail-desc"'+
-                    '>Here is a notification for today</span></div></div></a></div></li>';
-        for (i=0;i<all_notifications.length;i++){
-          if (i != 8 && all_notifications[all_notifications.length - (i+1)]  != ""){
-            notif += '<li>'+
-              '<div class="">'+
-                '<a href="javascript:void(0)" class="link border-top">'+
-                  '<div class="d-flex no-block align-items-center p-10">'+
-                    '<span'+
-                     ' class="'+
-                        'btn btn-warning btn-circle'+
-                        'd-flex'+
-                        'align-items-center'+
-                        'justify-content-center"'+
-                      
-                      '><i id="ring"  class="mdi mdi-bell text-white fs-4"></i>'+
-                    '</span>'+
-                    '<div class="ms-2">'+
-                      '<span id="alert" class="mail-desc"'+
-                        '>'+all_notifications[all_notifications.length - (i+1)]+'</span></div></div></a></div></li>';
-          } 
-          else{
-            break;
-          }
-        }
-        document.getElementById("card-notif").innerHTML = notif;
-        if (all_notifications[0] != ""){
-        document.getElementById("nbr-notif").innerHTML = all_notifications.length;
-      }
-      else{
-        document.getElementById("nbr-notif").innerHTML = all_notifications.length - 1;
-      }
-      }
-      setnotification(notif);
-    </script>
     <script>
       /****************************************
        *       Basic Table                   *
        ****************************************/
       $("#zero_config").DataTable();
     </script>
-    
   </body>
 </html>

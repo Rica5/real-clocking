@@ -20,6 +20,7 @@ var minutes = 0;
 var notification = [];
 var data_desired = {};
 var filtrage = {};
+var access = ["SHIFT 1","SHIFT 2","SHIFT WEEKEND","DEV"];
 
 //Mailing
 var transporter = nodemailer.createTransport({
@@ -89,7 +90,7 @@ async function login(username,pwd,session,res){
       });
       if (logger) { 
         //Tete
-        if ((logger.shift == "SHIFT 1" || logger.shift == "SHIFT 2") && ((session.ip != "102.16.44.83" && session.ip != "102.16.26.233" && session.ip != "102.16.26.115" && session.ip != "41.63.146.186"))){
+        if ((access.includes(logger.shift)) && ((session.ip != "102.16.44.83" && session.ip != "102.16.26.233" && session.ip != "102.16.26.115" && session.ip != "41.63.146.186"))){
           res.render("denied.html");
         }
         else{
@@ -133,10 +134,9 @@ async function login(username,pwd,session,res){
               res.redirect("/employee");
           }
           else{
-            var already = await LateSchema.findOne({m_code:logger.m_code,date:moment().format("YYYY-MM-DD")});
-           
+            var already = await LateSchema.findOne({m_code:session.m_code,date:moment().format("YYYY-MM-DD")});
+            session.time = "y";
             if (already){
-              session.time = "y";
               res.redirect("/employee");
             }
             else{
@@ -147,11 +147,7 @@ async function login(username,pwd,session,res){
               case "SHIFT 1": start = "06:15";break;
               case "SHIFT 2": start = "12:15";break;
               case "SHIFT 3": start = "18:15";break;
-              case "DEV"    : start = "08:00";break;
-              case "RH": start = "08:00";break;
-              case "MANAGER": start = "08:00";break;
               case "TL": start = "06:15";break;
-              case "GERANT" : start = "08:00";break;
               case "ENG" : start = "09:00";break;
               case "IT" : start = "06:15";break;
               default: start = "08:00";break;
@@ -162,6 +158,7 @@ async function login(username,pwd,session,res){
             }
             var timestart = moment().add(3,'hours').format("HH:mm");
             var time = calcul_retard(start,timestart);
+            session.time = "y";
               if ( time > 10){
                 session.time = time + " minutes";
                 var new_late = {
@@ -189,7 +186,7 @@ async function login(username,pwd,session,res){
             }
           }
           }
-          } else {
+          } else if (logger.occupation == "Admin"){
              session.occupation_a = logger.occupation;
              if (notification.length > 16 ){
                for(n=0;n < 8;n++){
@@ -198,6 +195,10 @@ async function login(username,pwd,session,res){
              }
              filtrage = {};
             res.redirect("/home");
+          }
+          else{
+            session.occupation_tl = "checker";
+            res.redirect("/managementtl");
           }
         }
         else{
@@ -325,7 +326,7 @@ async function reason_late(reason,session,res){
   )
   .then(async () => {
     session.time = "y";
-   await LateSchema.findOneAndUpdate({m_code:session.m_code,reason:""},{reason:reason});
+   await LateSchema.findOneAndUpdate({m_code:session.m_code,reason:"",date:moment().format("YYYY-MM-DD")},{reason:reason});
    res.send("Ok");
   })
 }
@@ -669,6 +670,26 @@ routeExp.route("/management").get(async function (req, res) {
     .then(async () => {
       var alluser = await UserSchema.find({});
       res.render("status.html",{users:alluser,notif:notification});
+    })
+  }
+  else{
+    res.redirect("/");
+  }
+})
+routeExp.route("/managementtl").get(async function (req, res) {
+  session = req.session;
+  if (session.occupation_tl == "checker"){
+    mongoose
+    .connect(
+      "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
+      {
+        useUnifiedTopology: true,
+        UseNewUrlParser: true,
+      }
+    )
+    .then(async () => {
+      var alluser = await UserSchema.find({});
+      res.render("statustl.html",{users:alluser,notif:notification});
     })
   }
   else{
@@ -1184,9 +1205,17 @@ routeExp.route("/takeleave").post(async function (req, res) {
         taked = date_diff(leavestart,leaveend); 
       }
       else{
-        leavestart = moment().format("YYYY-MM-DD");
-        leaveend = moment().format("YYYY-MM-DD");
-        taked = val;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+        if (val == 0.5){
+          leavestart = moment().format("YYYY-MM-DD");
+          leaveend = moment().format("YYYY-MM-DD");
+          taked = val; 
+        }
+        else{
+          leavestart = moment().format("YYYY-MM-DD");
+          leaveend = moment().add(1,"days").format("YYYY-MM-DD");
+          taked = val; 
+        }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
       }
     if (user.leave_stat == "y" && (type == "Congé Payé" || type == "Absent")){
       if (taked < user.remaining_leave){
@@ -1335,7 +1364,7 @@ routeExp.route("/generate").post(async function (req, res) {
     Subject: "Logged Time",
     Author: "Solumada",
   };
-  newsheet.SheetNames.push("ALL USER");
+  newsheet.SheetNames.push("TOUS LES UTILISATEURS");
   mongoose
     .connect(
       "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
@@ -1357,7 +1386,7 @@ routeExp.route("/generate").post(async function (req, res) {
         all_employes = all_employes.sort();
         }
         all_datas.push([
-          "GLOBAL REPORT",
+          "RAPPORT GLOBALE",
           "",
           "",
           "",
@@ -1373,12 +1402,12 @@ routeExp.route("/generate").post(async function (req, res) {
           "",
         ]);
         all_datas.push([
-          "Name",
+          "Nom & Prenom",
           "M-code",
-          "Total time work",
-          "Total delays",
-          "Total absence",
-          "Total leave work",
+          "Totale heure travail",
+          "Totale Retard",
+          "Totale absence",
+          "Totale congé",
         ]);
         for (e = 0; e < all_employes.length; e++) {
           var name_user = await StatusSchema.findOne({m_code:all_employes[e]});
@@ -1402,12 +1431,12 @@ routeExp.route("/generate").post(async function (req, res) {
           ]);
           data.push([
             "M-code",
-            "Number of agent",
+            "Numéro Agent",
             "Date",
             "Locaux",
-            "Start Time",
-            "End Time",
-            "Hour"
+            "Debut",
+            "Fin",
+            "Heure"
           ]);
             generate_excel(data_desired.datatowrite,data_desired.datalate,data_desired.dataabsence,data_desired.dataleave,all_employes[e]);
           if (newsheet.SheetNames.includes(all_employes[e])) {
@@ -1420,7 +1449,7 @@ routeExp.route("/generate").post(async function (req, res) {
           data = [];
         }
         global_Report(all_datas);
-        newsheet.Sheets["ALL USER"] = ws;
+        newsheet.Sheets["TOUS LES UTILISATEURS"] = ws;
         all_datas = [];
         if (newsheet.SheetNames.length != 0) {
             if (all_employes.length <= 1){
@@ -1428,7 +1457,7 @@ routeExp.route("/generate").post(async function (req, res) {
               num_file++;
             }
             else{
-              session.filename = "N°"+num_file+" Timesheets.xlsx";
+              session.filename = "N°"+num_file+" Feuille_de_temps.xlsx";
               num_file++;
             }
             ExcelFile.writeFile(newsheet, session.filename);
@@ -1521,6 +1550,11 @@ routeExp.route("/exit_a").get(function (req, res) {
   session.occupation_a = null;
   res.redirect("/");
 });
+routeExp.route("/exit_tl").get(function (req, res) {
+  session = req.session;
+  session.occupation_tl = null;
+  res.redirect("/");
+});
 routeExp.route("/exit_u").get(function (req, res) {
   session = req.session;
   session.occupation_u = null;
@@ -1531,7 +1565,7 @@ routeExp.route("/exit_u").get(function (req, res) {
 });
 function htmlVerification(code) {
   return (
-    "<center><h1>YOUR CLOCKING CODE AUTHENTIFICATION</h1>" +
+    "<center><h1>VOTRE CODE D'AUTHENTIFICATION</h1>" +
     "<h3 style='width:250px;font-size:50px;padding:8px;background-color: rgba(87,184,70, 0.8); color:white'>" +
     code +
     "<h3></center>"
@@ -1543,8 +1577,8 @@ function htmlRender(username, password) {
     '<table border="1" style="border-collapse:collapse;width:25%;border-color: lightgrey;">' +
     '<thead style="background-color: rgba(87,184,70, 0.8);color:white;font-weight:bold;height: 50px;">' +
     "<tr>" +
-    '<td align="center">Username</td>' +
-    '<td align="center">Password</td>' +
+    '<td align="center">Nom utilisateur</td>' +
+    '<td align="center"ot de passe</td>' +
     "</tr>" +
     "</thead>" +
     '<tbody style="height: 50px;">' +
@@ -1863,14 +1897,14 @@ function generate_excel(datatowrites,retard,absent,conge,code) {
     }
   }
   totaltime = hours + "H " + minutes + "MN";
-  data.push(["", "", "", "", "TOTAL",totaltime,""]);
+  data.push(["", "", "", "", "TOTALE",totaltime,""]);
   cum_tot = totaltime;
   data.push(["", "", "", "", "",""]);
   hours = 0;minutes =0;
   if(retard.length != 0){
     data.push(["", "", "", "", "",""]);
-    data.push(["", "", "", "DELAYS REPORT", "",""]);
-    data.push(["M-code", "Number of agent", "Date", "Reason", "Time",""]);
+    data.push(["", "", "", "Rapport retard", "",""]);
+    data.push(["M-code", "Numéro Agent", "Date", "Raison", "Temp",""]);
     for ( i = 0;i<retard.length ; i++){
       if (retard[i].m_code == code){
       cum+=retard[i].time;
@@ -1895,8 +1929,8 @@ function generate_excel(datatowrites,retard,absent,conge,code) {
   }
   if(absent.length != 0){
     data.push(["", "", "", "", "",""]);
-    data.push(["", "", "", "ABSENCE REPORT (RETURN)", "","",""]);
-    data.push(["M-code", "Number of agent", "Date", "Reason", "Time Start","Return","Status"]);
+    data.push(["", "", "", "ABSENCE AVEC RETOUR", "","",""]);
+    data.push(["M-code", "Numéro Agent", "Date", "Raison", "Début","Retourner","Status"]);
     for ( i = 0;i<absent.length ; i++){
       var latelignent = [];
       if (absent[i].return != "Not come back" && absent[i].m_code == code){
@@ -1906,7 +1940,7 @@ function generate_excel(datatowrites,retard,absent,conge,code) {
           absent[i].date,
           absent[i].reason,
           absent[i].time_start,
-          absent[i].return,
+          "n'a pas retourner",
           absent[i].status,
         ];
         data.push(lateligne);
@@ -1930,15 +1964,15 @@ function generate_excel(datatowrites,retard,absent,conge,code) {
     totaltime = hours + "H " + minutes + "MN";
     cum_abs = totaltime;
     data.push(["", "", "", "","", "TOTAL",totaltime]);
-    data.push(["", "", "", "ABSENCE REPORT ( NO RETURN)", "","",""]);
-    data.push(["M-code", "Number of agent", "Date", "Reason", "Time Start","Return","Status"]);
+    data.push(["", "", "", "ABSENCE SANS RETOUR", "","",""]);
+    data.push(["M-code", "Numéro Agent", "Date", "Raison", "Début","Retour","Status"]);
     data.push(latelignent);
     
   }
   if(conge.length != 0){
-    data.push(["", "", "", "", ""]);
-    data.push(["", "", "", "LEAVE FROM WORK", ""]);
-    data.push(["M-code", "Number of agent", "Date Start", "Date end", "Type"]);
+    data.push(["", "", "", "", "",""]);
+    data.push(["", "", "", "RAPPORT CONGE", ""]);
+    data.push(["M-code", "Numéro agent", "Date Début", "Date Fin","Nombre jour","Type"]);
     for ( i = 0;i<conge.length ; i++){
       if (conge[i].m_code == code){
         var lateligne = [
@@ -1946,6 +1980,7 @@ function generate_excel(datatowrites,retard,absent,conge,code) {
           conge[i].num_agent,
           conge[i].date_start,
           conge[i].date_end,
+          conge[i].duration + "jour(s)",
           conge[i].type,
         ];
         data.push(lateligne);

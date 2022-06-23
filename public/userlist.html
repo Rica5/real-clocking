@@ -387,7 +387,7 @@
                   <h5 class="card-title">List of Users</h5>
                   <div>
                     <a href="/newuser"><button type="button" class="btn btn-primary btn-sm">
-                      New user
+                      Ajouter utilisateur
                     </button></a><br>
                     <div id="notif" class="col-sm-6 notification">
                             
@@ -401,11 +401,11 @@
                     >
                       <thead>
                         <tr>
-                          <th>Username</th>
+                          <th>Nom & Prénom</th>
                           <th>M_code</th>
-                          <th>Number Of Agent</th>
+                          <th>Numéro d'agent</th>
                           <th>Shift</th>
-                          <th>Role</th>
+                          <th>Fonction</th>
                           <th>Actions</th>
                         </tr>
                       </thead>
@@ -469,13 +469,13 @@
 					<section class="card-body">
 						<div class="card-body">
 							<div class="form-group mt-lg">
-								<label class="col-sm-3 control-label" style="color:aliceblue">FIRST NAME</label>
+								<label class="col-sm-3 control-label" style="color:aliceblue">NOM</label>
 								<div class="col-sm-9">
 									<input type="text" id="first" name="first" onkeyup="verify()" class="form-control" placeholder="Enter first name here..." required/>
 								</div>
 							</div>
 							<div class="form-group mt-lg">
-								<label class="col-sm-3 control-label" style="color:aliceblue">LAST NAME</label>
+								<label class="col-sm-3 control-label" style="color:aliceblue">PRENOM</label>
 								<div class="col-sm-9">
 									<input type="text" id="last" name="last" onkeyup="verify()" class="form-control" placeholder="Enter last name here..." required/>
 								</div>
@@ -487,27 +487,29 @@
 									</div>
 								</div>
                                 <div class="form-group mt-lg">
-									<label class="col-sm-3 control-label" style="color:aliceblue">NUMBER AGENT</label>
+									<label class="col-sm-3 control-label" style="color:aliceblue">NUMERO AGENT</label>
 									<div class="col-sm-9">
 										<input type="text" id="num_agent" name="number_agent" onkeyup="verify()" class="form-control" placeholder="Enter Number agent here..." required/>
 									</div>
 								</div>
                 <div class="form-group mt-lg">
-									<label class="col-sm-3 control-label" style="color:aliceblue">SHIFT</label>
+									<label class="col-sm-3 control-label" style="color:aliceblue">FONCTION</label>
 									<div class="col-sm-9">
 										<div class="wrap-input100">
                       <select id="shift" class="input100" onchange="verify()" style="border-color: transparent;">
                                       <option value="">Choose SHIFT</option>
                                       <option value="RH">RH</option>
                                       <option value="MANAGER">MANAGER</option>
-                                      <option value="TL">TL</option>
+                                      <option value="TL">Team Leader</option>
                                       <option value="SHIFT 1">SHIFT 1</option>
                                       <option value="SHIFT 2">SHIFT 2</option>
                                       <option value="SHIFT 3">SHIFT 3</option>
+                                      <option value="SHIFT WEEKEND">SHIFT WEEKEND</option>
                                       <option value="DEV">DEVELOPER</option>
                                       <option value="GERANT">GERANT</option>
                                       <option value="ENG">ANGLAIS</option>
-							                        <option value="IT">Informatic Technician</option>
+                                      <option value="IT">IT</option>
+                                      <option value="COURSIER">COURSIER</option>
                                   </select>
                                   <span class="focus-input101"></span>
                     </div>

@@ -21,4 +21,4 @@ const User = mongoose.Schema({
    save_at:String,
    user_ht:Number
 })
-module.exports = mongoose.model('cuserTest',User);
+module.exports = mongoose.model('cuser',User);

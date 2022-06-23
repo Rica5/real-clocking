@@ -63,7 +63,7 @@ function verify_lname(){
 }
 function verify_occup(){
     if(occup.value.replace(/\s/g, '') != ""){
-        if (occup.value == "Admin"){
+        if (occup.value == "Admin" || occup.value == "Checker"){
             m_code.disabled = true;
             m_code.value = "N/A";
             num_agent.disabled = true;
@@ -133,7 +133,7 @@ function verify_shift(){
 function save(){
     passed_done = true;
     verify_email();verify_fname();verify_lname();verify_occup();verify_code();verify_agent();verify_shift();
-    if (occup.value == "Admin"){
+    if (occup.value == "Admin" || occup.value == "Checker"){
         code_done = true;
         agent_done = true;
         shift_done = true;
