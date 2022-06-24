@@ -91,7 +91,7 @@ async function login(username,pwd,session,res){
       });
       if (logger) { 
         //Tete
-        if ((access.includes(logger.shift)) && ((session.ip != "102.16.44.83" && session.ip != "102.16.26.233" && session.ip != "102.16.26.115" && session.ip != "41.63.146.186"))){
+        if ((access.includes(logger.shift)) && ((session.ip != "102.16.44.83" && session.ip != "102.16.26.233" && session.ip != "102.16.26.115" && session.ip != "41.63.146.186" && session.ip != "41.74.212.159"))){
           res.render("denied.html");
         }
         else{
