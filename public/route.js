@@ -129,7 +129,7 @@ async function login(username,pwd,session,res){
             }
             session.name = logger.first_name + " " + logger.last_name;
             session.num_agent = logger.num_agent;
-            var late = await LateSchema.findOne({m_code:logger.m_code,date:moment().format("YYYY-MM-DD"),reason:""});
+            var late = await LateSchema.findOne({m_code:session.m_code,date:moment().format("YYYY-MM-DD"),reason:""});
             if (late){
               session.time = late.time + " minutes";
               res.redirect("/employee");
