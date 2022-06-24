@@ -1323,7 +1323,7 @@ async function checkleave(){
   .then(async () => {
         var all_leave = await LeaveSchema.find({status:"on"});
         for (i=0;i< all_leave.length;i++){
-            if (date_diff(moment().format("YYYY-MM-DD"),all_leave[i].date_end) <= 0){
+            if (date_diff(moment().format("YYYY-MM-DD"),all_leave[i].date_end) < 0){
               await UserSchema.findOneAndUpdate({m_code:all_leave[i].m_code},{act_stat:"LEFTING"});
               await LeaveSchema.findOneAndUpdate({_id:all_leave[i]._id},{status:"Done"});
               notification.push(all_leave[i].nom + " devrait revenir du congé");
@@ -1349,7 +1349,6 @@ routeExp.route("/statuschange").post(async function (req, res) {
        await UserSchema.findOneAndUpdate({m_code:session.m_code},{act_stat:status,act_loc:locaux});
        res.send(status);
     });
-
   }
   else{
     res.send("error");
