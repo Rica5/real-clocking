@@ -20,7 +20,7 @@ var minutes = 0;
 var notification = [];
 var data_desired = {};
 var filtrage = {};
-var access = ["SHIFT 1","SHIFT 2","SHIFT WEEKEND","DEV"];
+var access = ["SHIFT 1","SHIFT 2","SHIFT WEEKEND"];
 var deduire = ["Mise a Pied","Absent"];
 
 //Mailing
