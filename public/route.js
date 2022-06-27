@@ -514,8 +514,8 @@ async function update_last(time_given,session,res){
     var user = await UserSchema.findOne({m_code:session.m_code});
     var last_time = await StatusSchema.findOne({m_code:session.m_code,time_end:""});
     if (parseInt(user.user_ht) != 0){
-      if (last_time.time_start){
-        if (hour_diff(last_time.time_start,time_given) <= (parseInt(user.user_ht) + 1)){
+      if (last_time){
+        if (hour_diff(parseInt(last_time.time_start),time_given) <= (parseInt(user.user_ht) + 1)){
           session.forget = "n";
           await StatusSchema.findOneAndUpdate({m_code:session.m_code,time_end:""},{time_end:time_given});
            res.send("Ok");
