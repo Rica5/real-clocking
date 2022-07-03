@@ -12,6 +12,7 @@ var sh3 = document.getElementById("sh3");
 var dev = document.getElementById("dev");
 var tl = document.getElementById("tl");
 var adm = document.getElementById("adm");
+var pde = document.getElementById("pde");
 var occupation = document.getElementById("occupation");
 var info = document.getElementById("info");
 var ids = "";
@@ -38,7 +39,7 @@ function getdata(url,id) {
 function define_leave(){
     if (oj.checked || dj.checked){
       if(oj.checked){
-        if (type_leave.value == ""){
+        if (type_leave.value == "" && datestart.value == ""){
           info.innerHTML = "Veuillez remplir tous les informations";
           info.style.display = "block";
      }
@@ -47,7 +48,7 @@ function define_leave(){
      }
       }
       else{
-        if (type_leave.value == ""){
+        if (type_leave.value == "" && datestart.value == ""){
           info.innerHTML = "Veuillez remplir tous les informations";
           info.style.display = "block";
      }
@@ -67,6 +68,22 @@ function define_leave(){
       
     }
        
+}
+function dissapeard(){
+  if (dj.checked){
+    pde.style.display = "none";
+  }
+  else{
+    pde.style.display = "block";
+  }
+}
+function dissapearo(){
+  if (oj.checked){
+    pde.style.display = "none";
+  }
+  else{
+    pde.style.display = "block";
+  }
 }
 function take_leave(url,type,startings,endings,val) {
     var http = new XMLHttpRequest();

@@ -153,7 +153,7 @@ function sendRequest(url, mail,code,agent,firsts,lasts,occupation,shifts) {
           if (this.responseText == "error"){
              success.style.display = "none";
              denied.style.display = "block";
-             denied.innerHTML = "User already exist";
+             denied.innerHTML = "L'utilisateur est déja enregistrés";
           }
 	      else if (this.responseText == "retour"){
 		      window.location = "/";
@@ -161,7 +161,7 @@ function sendRequest(url, mail,code,agent,firsts,lasts,occupation,shifts) {
           else{
             success.style.display = "block";
             denied.style.display = "none";
-            success.innerHTML = "User "+ this.responseText + " registered";
+            success.innerHTML = "Utilisateur "+ this.responseText + " enregistré";
             email.value = "";
              fname.value = "";
              lname.value ="";

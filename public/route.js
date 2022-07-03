@@ -334,6 +334,7 @@ async function reason_late(reason,session,res){
 routeExp.route("/employee").get(async function (req, res) {
   session = req.session;
   if (session.occupation_u == "User"){
+    await conge_define(req);
     await checkleave();
     mongoose
     .connect(
@@ -461,7 +462,7 @@ routeExp.route("/validate_a").post(async function (req, res) {
     .then(async () => {
       await AbsentSchema.findOneAndUpdate(
         { _id: id },
-        { validation: true,status:"accepted"}
+        { validation: true,status:"Accepter"}
       );
       res.send("Ok");
     });
@@ -484,7 +485,7 @@ routeExp.route("/denied_a").post(async function (req, res) {
       }
     )
     .then(async () => {
-      await AbsentSchema.findOneAndUpdate({ _id: id },{status:"denied"});
+      await AbsentSchema.findOneAndUpdate({ _id: id },{status:"Non communiqué"});
       res.send("Ok");
     });
   }
@@ -607,6 +608,7 @@ async function take_break(session){
 routeExp.route("/home").get(async function (req, res) {
   session = req.session;
   if (session.occupation_a == "Admin"){
+    await conge_define(req);
     await checkleave();
     mongoose
     .connect(
@@ -813,7 +815,7 @@ routeExp.route("/checkmail").post(async function (req, res) {
         session.code = randomCode();
         sendEmail(
           session.mailconfirm,
-          "Verification code",
+          "Code de verification",
           htmlVerification(session.code)
         );
         res.send("done");
@@ -1198,28 +1200,26 @@ routeExp.route("/takeleave").post(async function (req, res) {
   )
   .then(async () => {
     var user = await UserSchema.findOne({_id:userid});
-    if (await LeaveSchema.findOne({m_code:user.m_code,status:"wait"})){
+    if (await LeaveSchema.findOne({m_code:user.m_code,status:"en attente"})){
       res.send("already");
     }
     else{
       var taked;
       if (val == "n"){
-        taked = date_diff(leavestart,leaveend); 
+        taked = date_diff(leavestart,leaveend) + 1; 
       }
       else{
         if (val == 0.5){
-          leavestart = moment().format("YYYY-MM-DD");
-          leaveend = moment().format("YYYY-MM-DD");
+          leaveend = leavestart;
           taked = val; 
         }
         else{
-          leavestart = moment().format("YYYY-MM-DD");
-          leaveend = moment().add(1,"days").format("YYYY-MM-DD");
+          leaveend = leavestart;
           taked = val; 
         }
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
       }
-    if (user.leave_stat == "y" && (type == "Congé Payé" || type == "Absent")){
+    if (user.leave_stat == "y" && (type == "Congé Payé" || type == "Absent" || type == "Congé sans solde")){
       if (deduire.includes(type)){
         deduction = " ( a déduire sur salaire )";
       }
@@ -1232,14 +1232,15 @@ routeExp.route("/takeleave").post(async function (req, res) {
       date_end:leaveend,
       duration:taked,
       type:type + deduction,
-      status:"wait",
+      status:"en attente",
       validation:false
     }
     await LeaveSchema(new_leave).save();
     if (type == "Congé Payé"){
       await UserSchema.findOneAndUpdate({m_code:user.m_code},{$inc:{remaining_leave:-taked,leave_taked:taked}});
     }
-    await conge_define(req,taked);
+    await conge_define(req);
+    await checkleave();
     res.send("Ok");
   }
   else{
@@ -1255,13 +1256,15 @@ routeExp.route("/takeleave").post(async function (req, res) {
       date_end:leaveend,
       duration:taked,
       type:type,
-      status:"wait",
+      status:"en attente",
       validation:false
     }
     await LeaveSchema(new_leave).save();
-    await conge_define(req,taked);
+    await conge_define(req);
+    await checkleave();
     res.send("Ok");
   }
+  
   else{
     res.send("not authorized");
   }
@@ -1281,7 +1284,7 @@ async function leave_permission(user){
         await UserSchema.findOneAndUpdate({m_code:user},{remaining_leave:30,leave_stat:"y"});
   })
 }
-async function conge_define(req,nbr){
+async function conge_define(req){
   mongoose
   .connect(
     "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
@@ -1291,19 +1294,29 @@ async function conge_define(req,nbr){
     }
   )
   .then(async () => {
-    var all_leave = await LeaveSchema.find({status:"wait"});
+    var all_leave = await LeaveSchema.find({status:"en attente"});
     for (i=0;i< all_leave.length;i++){
       if (moment().format("YYYY-MM-DD") == all_leave[i].date_start){
-        if (nbr >= 1){
+        if (all_leave[i].duration >= 1){
           await UserSchema.findOneAndUpdate({m_code:all_leave[i].m_code},{act_stat:"VACATION",act_loc:"Not defined"});
-        await LeaveSchema.findOneAndUpdate({m_code:all_leave[i].m_code,date_start:moment().format("YYYY-MM-DD")},{status:"on"});
+        await LeaveSchema.findOneAndUpdate({_id:all_leave[i]._id,m_code:all_leave[i].m_code,date_start:moment().format("YYYY-MM-DD")},{status:"en cours"});
         const io = req.app.get('io');
         io.sockets.emit('status',"VACATION"+","+all_leave[i].m_code);
         }
         else{
-          await LeaveSchema.findOneAndUpdate({m_code:all_leave[i].m_code,date_start:moment().format("YYYY-MM-DD")},{status:"Done"});
-          const io = req.app.get('io');
-          io.sockets.emit('status',"VACATION"+","+all_leave[i].m_code);
+          await LeaveSchema.findOneAndUpdate({_id:all_leave[i]._id,m_code:all_leave[i].m_code,date_start:all_leave[i].date_start},{status:"en cours"});
+        }
+        
+      }
+      else if(date_diff(moment().format("YYYY-MM-DD"),all_leave[i].date_start) < 0){
+        if (date_diff(moment().format("YYYY-MM-DD"),all_leave[i].date_start) * -1 < all_leave[i].duration && all_leave[i].duration > 1){
+          await UserSchema.findOneAndUpdate({m_code:all_leave[i].m_code},{act_stat:"VACATION",act_loc:"Not defined"});
+        await LeaveSchema.findOneAndUpdate({_id:all_leave[i]._id,m_code:all_leave[i].m_code,date_start:all_leave[i].date_start},{status:"en cours"});
+        const io = req.app.get('io');
+        io.sockets.emit('status',"VACATION"+","+all_leave[i].m_code);
+        }
+        else{
+          await LeaveSchema.findOneAndUpdate({_id:all_leave[i]._id,m_code:all_leave[i].m_code,date_start:all_leave[i].date_start},{status:"Terminée"});
         }
         
       }
@@ -1321,11 +1334,11 @@ async function checkleave(){
     }
   )
   .then(async () => {
-        var all_leave = await LeaveSchema.find({status:"on"});
+        var all_leave = await LeaveSchema.find({status:"en cours"});
         for (i=0;i< all_leave.length;i++){
             if (date_diff(moment().format("YYYY-MM-DD"),all_leave[i].date_end) < 0){
               await UserSchema.findOneAndUpdate({m_code:all_leave[i].m_code},{act_stat:"LEFTING"});
-              await LeaveSchema.findOneAndUpdate({_id:all_leave[i]._id},{status:"Done"});
+              await LeaveSchema.findOneAndUpdate({_id:all_leave[i]._id},{status:"Terminée"});
               notification.push(all_leave[i].nom + " devrait revenir du congé");
             }
         }
@@ -1684,7 +1697,7 @@ function time_passed(starting){
   var years = duration.years();
   var months = duration.months();
   var days = duration.days();
-  var tp = years +" years "+  months + " month(s) " + days + " day(s)";
+  var tp = years +" an(s) "+  months + " mois " + days + " jour(s)";
   return tp;
 }
 function date_diff(starting,ending){

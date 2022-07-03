@@ -513,6 +513,7 @@
                     >
                       <option value="">Select</option>
                       <option value="Congé Payé">Congé Payé ( rien a deduire )</option>
+                      <option value="Congé sans solde">Congé Sans Solde ( a deduire sur salaire )</option>
                       <option value="Permission exceptionelle">Permission exceptionelle ( rien a deduire )</option>
                       <option value="Repos Maladie">Repos Maladie ( rien a deduire )</option>
                       <option value="Absent">Absent ( a deduire sur salaire )</option>
@@ -524,11 +525,11 @@
                         <label class="col-md-3">Demi journée / une journée</label>
                         <div class="col-md-9">
                           <div class="form-check mr-sm-2">
-                            <input type="checkbox" class="form-check-input" value="0.5" id="demi">
+                            <input type="checkbox" onclick="dissapeard()" class="form-check-input" value="0.5" id="demi">
                             <label class="form-check-label mb-0" for="customControlAutosizing1">Demi journée</label>
                           </div>
                           <div class="form-check mr-sm-2">
-                            <input type="checkbox" class="form-check-input" value="1" id="one">
+                            <input type="checkbox" class="form-check-input" value="1" onclick="dissapearo()" id="one">
                             <label class="form-check-label mb-0" for="customControlAutosizing3">Une journee</label>
                           </div>
                         </div>
@@ -537,7 +538,7 @@
                         <label>Date de debut</label>
                         <input type="date" class="form-control" id="datestart" placeholder="Enter Date">
                       </div>
-                      <div class="form-group mt-3">
+                      <div id="pde" class="form-group mt-3">
                         <label>Date End</label>
                         <input type="date" class="form-control" id="dateend" placeholder="Enter Date">
                       </div>
