@@ -21,7 +21,7 @@ var notification = [];
 var data_desired = {};
 var filtrage = {};
 var access = ["SHIFT 1","SHIFT 2","SHIFT WEEKEND"];
-var deduire = ["Mise a Pied","Absent"];
+var deduire = ["Mise a Pied","Absent","Congé sans solde"];
 
 //Mailing
 var transporter = nodemailer.createTransport({
