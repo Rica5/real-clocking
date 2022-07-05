@@ -13,24 +13,47 @@ var dev = document.getElementById("dev");
 var tl = document.getElementById("tl");
 var adm = document.getElementById("adm");
 var pde = document.getElementById("pde");
+var edit_leave = "n";
 var occupation = document.getElementById("occupation");
 var info = document.getElementById("info");
 var ids = "";
 var dj = document.getElementById("demi");
 var oj = document.getElementById("one");
+var already;
 function getdata(url,id) {
     var http = new XMLHttpRequest();
     http.open("POST", url, true);
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     http.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
-        var data = this.responseText.split(",");
+        var data = this.responseText.split(";");
         username.innerHTML = data[0] + " " + data[1];
         occupation.innerHTML = data[2];
         ids = data[3];
         tp.innerHTML = data[4];
         remaining_leave.innerHTML = data[5];
         leave_taked.innerHTML = data[6];
+        already = JSON.parse(data[7]);
+        if(already){
+          edit_leave = already._id;
+         type_leave.value = already.type.split("(")[0].trim();
+         if (already.duration == 0.5){
+            pde.style.display = "none";
+            datestart.value = already.date_start;
+            dj.checked = true;
+         }
+         else if (already.duration == 1){
+          pde.style.display = "none";
+          datestart.value = already.date_start;
+          oj.checked = true;
+         }
+         else{
+          dj.checked = false;
+          oj.checked = false;
+          datestart.value = already.date_start;
+          dateend.value = already.date_end;
+         }
+        }
         user_selected.style.display = "block";
       }
     };
@@ -44,7 +67,7 @@ function define_leave(){
           info.style.display = "block";
      }
      else{
-      take_leave("/takeleave",type_leave.value,datestart.value,dateend.value,oj.value);
+      take_leave("/takeleave",type_leave.value,datestart.value,dateend.value,oj.value,edit_leave);
      }
       }
       else{
@@ -53,7 +76,7 @@ function define_leave(){
           info.style.display = "block";
      }
      else{
-      take_leave("/takeleave",type_leave.value,datestart.value,dateend.value,dj.value);
+      take_leave("/takeleave",type_leave.value,datestart.value,dateend.value,dj.value,edit_leave);
      }
       }
     }
@@ -63,11 +86,10 @@ function define_leave(){
         info.style.display = "block";
    }
    else{
-    take_leave("/takeleave",type_leave.value,datestart.value,dateend.value,"n");
+    take_leave("/takeleave",type_leave.value,datestart.value,dateend.value,"n",edit_leave);
    }
       
-    }
-       
+    }  
 }
 function dissapeard(){
   if (dj.checked){
@@ -92,8 +114,15 @@ function take_leave(url,type,startings,endings,val) {
     http.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
         if (this.responseText == "Ok"){
-          info.innerHTML = "Congé pour " + username.textContent + " enregistrés";
-          info.style.display = "block";
+          if (edit_leave != "n"){
+            info.innerHTML = "Congé pour " + username.textContent + " modifier avec succés";
+            info.style.display = "block";
+            edit_leave = "n";
+          }else{
+            info.innerHTML = "Congé pour " + username.textContent + " enregistrés";
+            info.style.display = "block";
+          }
+         
         }
         else if (this.responseText == "not authorized"){
           info.innerHTML = username.textContent + " n'est pas autorisée a prendre ce type de congé";
@@ -113,5 +142,5 @@ function take_leave(url,type,startings,endings,val) {
       
       }
     };
-    http.send("id="+ids+"&type="+type+"&leavestart="+startings+"&leaveend="+endings+"&court="+val);
+    http.send("id="+ids+"&type="+type+"&leavestart="+startings+"&leaveend="+endings+"&court="+val+"&edit="+edit_leave);
   }

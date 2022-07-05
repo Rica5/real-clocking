@@ -91,7 +91,7 @@ async function login(username,pwd,session,res){
       });
       if (logger) { 
         //Tete
-        if ((access.includes(logger.shift)) && ((session.ip != "102.16.44.83" && session.ip != "102.16.26.233" && session.ip != "102.16.26.115" && session.ip != "41.63.146.186" && session.ip != "41.74.212.159"))){
+        if ((access.includes(logger.shift)) && ((session.ip != "102.16.44.83" && session.ip != "102.16.26.233" && session.ip != "102.16.26.115" && session.ip != "41.63.146.186" && session.ip != "84.239.14.151"))){
           res.render("denied.html");
         }
         else{
@@ -731,7 +731,8 @@ routeExp.route("/getuser_leave").post(async function (req, res) {
   )
   .then(async () => {
     var user = await UserSchema.findOne({_id:id });
-    res.send(user.first_name +","+user.last_name+","+user.shift+","+user._id + ","+time_passed(user.save_at)+","+user.remaining_leave +","+user.leave_taked);
+    var conge = await LeaveSchema.findOne({m_code:user.m_code,status:{$ne:"Terminée"}});
+    res.send(user.first_name +";"+user.last_name+";"+user.shift+";"+user._id + ";"+time_passed(user.save_at)+";"+user.remaining_leave +";"+user.leave_taked+";"+JSON.stringify(conge));
   });
 });
 //Update User
@@ -1189,6 +1190,7 @@ routeExp.route("/takeleave").post(async function (req, res) {
     var leavestart = req.body.leavestart;
     var leaveend = req.body.leaveend;
     var val = req.body.court;
+    var edit = req.body.edit;
     var deduction = " ( rien à deduire )";
     mongoose
   .connect(
@@ -1200,75 +1202,95 @@ routeExp.route("/takeleave").post(async function (req, res) {
   )
   .then(async () => {
     var user = await UserSchema.findOne({_id:userid});
-    if (await LeaveSchema.findOne({m_code:user.m_code,status:"en attente"})){
-      res.send("already");
-    }
-    else{
-      var taked;
+    var taked;
+    if(edit != "n"){
+      if(deduire.includes(type)){
+        type = type + " ( a déduire sur salaire )"
+      }
+      else{
+        type = type + deduction;
+      }
       if (val == "n"){
         taked = date_diff(leavestart,leaveend) + 1; 
       }
       else{
-        if (val == 0.5){
-          leaveend = leavestart;
-          taked = val; 
+        taked = val;
+        leaveend = leavestart;
+      }
+      await LeaveSchema.findOneAndUpdate({_id:edit},{type:type,date_start:leavestart,date_end:leaveend,duration:taked});
+      res.send("Ok");
+    }
+    else{
+      if (await LeaveSchema.findOne({m_code:user.m_code,status:"en attente"})){
+        res.send("already");
+      }
+      else{
+        
+        if (val == "n"){
+          taked = date_diff(leavestart,leaveend) + 1; 
         }
         else{
-          leaveend = leavestart;
-          taked = val; 
+          if (val == 0.5){
+            leaveend = leavestart;
+            taked = val; 
+          }
+          else{
+            leaveend = leavestart;
+            taked = val; 
+          }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
         }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+      if (user.leave_stat == "y" && (type == "Congé Payé" || type == "Absent" || type == "Congé sans solde")){
+        if (deduire.includes(type)){
+          deduction = " ( a déduire sur salaire )";
+        }
+        if (taked < user.remaining_leave){
+      var new_leave = {
+        m_code:user.m_code,
+        num_agent : user.num_agent,
+        nom:user.first_name + " "+ user.last_name,
+        date_start:leavestart,
+        date_end:leaveend,
+        duration:taked,
+        type:type + deduction,
+        status:"en attente",
+        validation:false
       }
-    if (user.leave_stat == "y" && (type == "Congé Payé" || type == "Absent" || type == "Congé sans solde")){
-      if (deduire.includes(type)){
-        deduction = " ( a déduire sur salaire )";
+      await LeaveSchema(new_leave).save();
+      if (type == "Congé Payé"){
+        await UserSchema.findOneAndUpdate({m_code:user.m_code},{$inc:{remaining_leave:-taked,leave_taked:taked}});
       }
-      if (taked < user.remaining_leave){
-    var new_leave = {
-      m_code:user.m_code,
-      num_agent : user.num_agent,
-      nom:user.first_name + " "+ user.last_name,
-      date_start:leavestart,
-      date_end:leaveend,
-      duration:taked,
-      type:type + deduction,
-      status:"en attente",
-      validation:false
+      await conge_define(req);
+      await checkleave();
+      res.send("Ok");
     }
-    await LeaveSchema(new_leave).save();
-    if (type == "Congé Payé"){
-      await UserSchema.findOneAndUpdate({m_code:user.m_code},{$inc:{remaining_leave:-taked,leave_taked:taked}});
+    else{
+      res.send("exceeds");
     }
-    await conge_define(req);
-    await checkleave();
-    res.send("Ok");
-  }
-  else{
-    res.send("exceeds");
-  }
-  }
-  else if(type == "Mise a Pied" || type == "Permission exceptionelle" || type == "Repos Maladie" || type == "Congé de maternité"){
-    var new_leave = {
-      m_code:user.m_code,
-      num_agent : user.num_agent,
-      nom:user.first_name + " "+ user.last_name,
-      date_start:leavestart,
-      date_end:leaveend,
-      duration:taked,
-      type:type,
-      status:"en attente",
-      validation:false
     }
-    await LeaveSchema(new_leave).save();
-    await conge_define(req);
-    await checkleave();
-    res.send("Ok");
+    else if(type == "Mise a Pied" || type == "Permission exceptionelle" || type == "Repos Maladie" || type == "Congé de maternité"){
+      var new_leave = {
+        m_code:user.m_code,
+        num_agent : user.num_agent,
+        nom:user.first_name + " "+ user.last_name,
+        date_start:leavestart,
+        date_end:leaveend,
+        duration:taked,
+        type:type + deduction,
+        status:"en attente",
+        validation:false
+      }
+      await LeaveSchema(new_leave).save();
+      await conge_define(req);
+      await checkleave();
+      res.send("Ok");
+    }
+    else{
+      res.send("not authorized");
+    }
   }
-  
-  else{
-    res.send("not authorized");
-  }
-}
+    }
+    
   })
 })
 async function leave_permission(user){
