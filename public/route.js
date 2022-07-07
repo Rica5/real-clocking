@@ -91,7 +91,7 @@ async function login(username,pwd,session,res){
       });
       if (logger) { 
         //Tete
-        if ((access.includes(logger.shift)) && ((session.ip != "102.16.44.83" && session.ip != "102.16.26.233" && session.ip != "102.16.26.115" && session.ip != "41.63.146.186" && session.ip != "84.239.14.151"))){
+        if ((access.includes(logger.shift)) && ((session.ip != "102.16.44.83" && session.ip != "102.16.26.233" && session.ip != "102.16.26.115" && session.ip != "41.63.146.186" && session.ip.split(".")[0] != "84"))){
           res.render("denied.html");
         }
         else{
@@ -148,9 +148,12 @@ async function login(username,pwd,session,res){
               case "SHIFT 1": start = "06:15";break;
               case "SHIFT 2": start = "12:15";break;
               case "SHIFT 3": start = "18:15";break;
-              case "TL": start = "06:15";break;
+              case "TL": start = "20:00";break;
               case "ENG" : start = "09:00";break;
-              case "IT" : start = "06:15";break;
+              case "IT" : start = "20:00";break;
+              case "RH" : start = "20:00";break;
+              case "MANAGER" : start = "20:00";break;
+              case "GERANT" : start = "20:00";break;
               default: start = "08:00";break;
             }
             switch(today){
@@ -1320,7 +1323,7 @@ async function conge_define(req){
     for (i=0;i< all_leave.length;i++){
       if (moment().format("YYYY-MM-DD") == all_leave[i].date_start){
         if (all_leave[i].duration >= 1){
-          await UserSchema.findOneAndUpdate({m_code:all_leave[i].m_code},{act_stat:"VACATION",act_loc:"Not defined"});
+        await UserSchema.findOneAndUpdate({m_code:all_leave[i].m_code},{act_stat:"VACATION",act_loc:"Not defined"});
         await LeaveSchema.findOneAndUpdate({_id:all_leave[i]._id,m_code:all_leave[i].m_code,date_start:moment().format("YYYY-MM-DD")},{status:"en cours"});
         const io = req.app.get('io');
         io.sockets.emit('status',"VACATION"+","+all_leave[i].m_code);
@@ -1332,7 +1335,7 @@ async function conge_define(req){
       }
       else if(date_diff(moment().format("YYYY-MM-DD"),all_leave[i].date_start) < 0){
         if (date_diff(moment().format("YYYY-MM-DD"),all_leave[i].date_start) * -1 < all_leave[i].duration && all_leave[i].duration > 1){
-          await UserSchema.findOneAndUpdate({m_code:all_leave[i].m_code},{act_stat:"VACATION",act_loc:"Not defined"});
+        await UserSchema.findOneAndUpdate({m_code:all_leave[i].m_code},{act_stat:"VACATION",act_loc:"Not defined"});
         await LeaveSchema.findOneAndUpdate({_id:all_leave[i]._id,m_code:all_leave[i].m_code,date_start:all_leave[i].date_start},{status:"en cours"});
         const io = req.app.get('io');
         io.sockets.emit('status',"VACATION"+","+all_leave[i].m_code);
