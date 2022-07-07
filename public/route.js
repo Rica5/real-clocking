@@ -20,6 +20,7 @@ var minutes = 0;
 var notification = [];
 var data_desired = {};
 var filtrage = {};
+var exc_retard = ["RH","MANAGER","IT","GERANT"];
 var access = ["SHIFT 1","SHIFT 2","SHIFT WEEKEND"];
 var deduire = ["Mise a Pied","Absent","Congé sans solde"];
 
@@ -159,6 +160,9 @@ async function login(username,pwd,session,res){
             switch(today){
               case 6 : start="08:00";break;
               case 7 : start="08:00";break;
+            }
+            if (exc_retard.includes(session.shift)){
+              start = "20:00";
             }
             var timestart = moment().add(3,'hours').format("HH:mm");
             var time = calcul_retard(start,timestart);
