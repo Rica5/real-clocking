@@ -23,6 +23,7 @@ var filtrage = {};
 var exc_retard = ["RH","MANAGER","IT","GERANT"];
 var access = ["SHIFT 1","SHIFT 2","SHIFT WEEKEND"];
 var deduire = ["Mise a Pied","Absent","Congé sans solde"];
+var leave_checking = true;
 
 //Mailing
 var transporter = nodemailer.createTransport({
@@ -149,12 +150,12 @@ async function login(username,pwd,session,res){
               case "SHIFT 1": start = "06:15";break;
               case "SHIFT 2": start = "12:15";break;
               case "SHIFT 3": start = "18:15";break;
-              case "TL": start = "20:00";break;
+              case "TL": start = "21:00";break;
               case "ENG" : start = "09:00";break;
-              case "IT" : start = "20:00";break;
-              case "RH" : start = "20:00";break;
-              case "MANAGER" : start = "20:00";break;
-              case "GERANT" : start = "20:00";break;
+              case "IT" : start = "21:00";break;
+              case "RH" : start = "21:00";break;
+              case "MANAGER" : start = "21:00";break;
+              case "GERANT" : start = "21:00";break;
               default: start = "08:00";break;
             }
             switch(today){
@@ -162,7 +163,7 @@ async function login(username,pwd,session,res){
               case 7 : start="08:00";break;
             }
             if (exc_retard.includes(session.shift)){
-              start = "20:00";
+              start = "21:00";
             }
             var timestart = moment().add(3,'hours').format("HH:mm");
             var time = calcul_retard(start,timestart);
@@ -341,8 +342,11 @@ async function reason_late(reason,session,res){
 routeExp.route("/employee").get(async function (req, res) {
   session = req.session;
   if (session.occupation_u == "User"){
+    if (leave_checking){
+    leave_checking = false;
     await conge_define(req);
     await checkleave();
+    }
     mongoose
     .connect(
       "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
@@ -615,8 +619,11 @@ async function take_break(session){
 routeExp.route("/home").get(async function (req, res) {
   session = req.session;
   if (session.occupation_a == "Admin"){
-    await conge_define(req);
-    await checkleave();
+    if (leave_checking){
+      leave_checking = false;
+      await conge_define(req);
+      await checkleave();
+    }
     mongoose
     .connect(
       "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
@@ -1145,6 +1152,7 @@ async function leftwork(locaux,session,res){
        await StatusSchema.findOneAndUpdate({m_code:session.m_code,date:date,locaux:locaux,time_end:""},{time_end:timeend});
        await UserSchema.findOneAndUpdate({m_code:session.m_code},{late:"n",count:0});
        session.occupation_u = null;
+       leave_checking = true;
        res.redirect("/exit_u");
     });
 }
@@ -1377,26 +1385,26 @@ async function checkleave(){
 routeExp.route("/statuschange").post(async function (req, res) {
   session = req.session;
   if (session.occupation_u == "User"){
-    var locaux = req.body.act_loc;
-      var status = req.body.act_stat;
-      mongoose
-    .connect(
-      "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
-      {
-        useUnifiedTopology: true,
-        UseNewUrlParser: true,
-      }
-    )
-    .then(async () => {
-       await UserSchema.findOneAndUpdate({m_code:session.m_code},{act_stat:status,act_loc:locaux});
-       res.send(status);
-    });
+    await status_change(req.body.act_loc,req.body.act_stat,res);
   }
   else{
     res.send("error");
-  }
-      
+  } 
 });
+async function status_change(lc,st,res){
+  mongoose
+  .connect(
+    "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
+    {
+      useUnifiedTopology: true,
+      UseNewUrlParser: true,
+    }
+  )
+  .then(async () => {
+     await UserSchema.findOneAndUpdate({m_code:session.m_code},{act_stat:st,act_loc:lc});
+     res.send(st+","+moment().add(3,"hours").format("HH:mm"));
+  });
+}
 routeExp.route("/session_end").get(async function (req, res) {
     res.render("block.html");
 })

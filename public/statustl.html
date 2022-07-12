@@ -466,7 +466,6 @@
       }
 }
 setnotification(notif);
-  
   window.onload = clockRunner();
 
 </script>
@@ -490,7 +489,10 @@ setnotification(notif);
       /****************************************
        *       Basic Table                   *
        ****************************************/
-      $("#zero_config").DataTable();
+       $("#zero_config").DataTable({
+        "pageLength" : 100
+      });
+      $("#zero_config").DataTable().search("Ikano").draw();
     </script>
   </body>
 </html>

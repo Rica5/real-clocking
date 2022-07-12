@@ -265,11 +265,14 @@ function sendstatus(loc,stat){
              window.location = "/session_end";
           }
           else{
-			switch(this.responseText){
+			switch(this.responseText.split(",")[0]){
 				case "WORKING" :  socket.emit("actuel","TRAVAILLER"+','+'<%= user.m_code %>');
 				socket.emit("loc",document.getElementById("locaux").value);break;
 				case "LEFTING" : socket.emit("actuel","LEFTING"+','+'<%= user.m_code %>');break;
 				default : socket.emit("actuel",a.value+','+'<%= user.m_code %>');senddata3(a.value);break;
+			}
+			if (this.responseText.split(",")[0] == "DEJEUNER" || this.responseText.split(",")[0] == "PAUSE"){
+				info.innerHTML = "Vous avez pris votre " + this.responseText.split(",")[0].toLowerCase() + " à "+this.responseText.split(",")[1];
 			}
           }
           
