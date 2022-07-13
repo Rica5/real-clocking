@@ -73,9 +73,12 @@ routeExp.route("/login").post(async function (req, res) {
 });
 routeExp.route("/getip").post(async function (req, res) {
   session = req.session;
-  session.ip = req.body.ip;
-  res.send("Ok");
+  await set_ip(req.body.ip,session,res);
 });
+async function set_ip(ip_get,session,res){
+  session.ip = ip_get;
+  res.send("Ok");
+}
 async function login(username,pwd,session,res){
   mongoose
     .connect(
@@ -93,7 +96,7 @@ async function login(username,pwd,session,res){
       });
       if (logger) { 
         //Tete
-        if ((access.includes(logger.shift)) && ((session.ip != "102.16.44.83" && session.ip != "102.16.26.233" && session.ip != "102.16.26.115" && session.ip != "41.63.146.186" && session.ip.split(".")[0] != "84"))){
+        if ((access.includes(logger.shift)) && ((session.ip != "102.16.44.83" && session.ip != "102.16.26.233" && session.ip != "102.16.26.115" && session.ip != "41.63.146.186"))){
           res.render("denied.html");
         }
         else{
@@ -1741,7 +1744,7 @@ function date_diff(starting,ending){
   var startings = moment(moment(starting)).format("YYYY-MM-DD");
   var endings = moment(ending,"YYYY-MM-DD");
   var duration = moment.duration(endings.diff(startings));
-  var dayl = duration.days();
+  var dayl = duration.asDays();
   return dayl;
 }
 function calcul_retard(regular,arrived){
