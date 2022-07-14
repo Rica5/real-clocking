@@ -1408,6 +1408,9 @@ async function status_change(lc,st,res){
      res.send(st+","+moment().add(3,"hours").format("HH:mm"));
   });
 }
+routeExp.route("/current_date").post(async function (req, res) {
+  res.send(moment().add(3,"hours").locale("Fr").format("YYYY-MM-DD  HH:mm:ss"));
+})
 routeExp.route("/session_end").get(async function (req, res) {
     res.render("block.html");
 })

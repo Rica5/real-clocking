@@ -44,9 +44,25 @@ function lefts(){
 		a.style.display = "none";
 		l.style.display = "none";
 }
+var datetime = null;
+function get_current_time(url){
+    var http = new XMLHttpRequest();
+    http.open("POST", url, true);
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        clock.innerHTML = this.responseText;
+        datetime = this.responseText;
+      }
+    };
+    http.send();
+  }
+  get_current_time("/current_date");
 function clockRunner () {
-    var datetime = day[new Date().getDay()]+ "  a  "+ new Date().toLocaleTimeString();
-    clock.innerHTML = datetime;
+    if (datetime != null){
+        clock.innerHTML = moment(datetime).locale("Fr").add(1,"seconds").format("dddd DD MMMM HH:mm:ss");
+        datetime = moment(datetime).add(1,"seconds").format("YYYY-MM-DD  HH:mm:ss");
+    }
     setTimeout(clockRunner, 1000);
   }
   
