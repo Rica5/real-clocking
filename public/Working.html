@@ -189,6 +189,9 @@
   }
   
   var socket = io();
+  socket.on('date', function(dat) {
+	clock.innerHTML = dat;
+  })
   var locatenow = document.getElementById("locaux");
   var hour_today = document.getElementById("hour");
   if (user_occup.includes("SHIFT")){

@@ -6,6 +6,7 @@ const route = require("./public/route.js");
 const PORT = process.env.PORT || 8080;
 const methodOverride = require("method-override");
 const expsession = require('cookie-session');
+const moment = require("moment");
 
 app.use(methodOverride("X-HTTP-Method"));
 app.use(methodOverride("X-HTTP-Method-Override"));
@@ -47,6 +48,9 @@ io.on('connection', socket => {
   })
   socket.on('loc', lc =>{
     socket.broadcast.emit("locaux",lc);
+})
+socket.on('date', val =>{
+  socket.broadcast.emit("date",moment().add(3,"hours").locale("Fr").format("dddd DD MMMM HH:mm:ss"));
 })
 });
 app.set("io", io);
