@@ -89,3 +89,24 @@ function getdata(url,id) {
     };
     http.send("fname="+fname);
   }
+  function update_project_user(m_c){
+    var options = document.getElementById(m_c).selectedOptions;
+    var values = Array.from(options).map(({ value }) => value);
+    send_project(m_c,values);
+  }
+  function send_project(owner,project_choose) {
+    var http = new XMLHttpRequest();
+    http.open("POST", "/update_project", true);
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        if (this.responseText == "error"){
+             window.location ="/";
+         }
+         else{
+            
+         }
+      }
+    };
+    http.send("owner="+owner+"&choice="+project_choose);
+  }

@@ -19,12 +19,16 @@ var hours = 0;
 var minutes = 0;
 var notification = [];
 var data_desired = {};
+var monthly_leave = [];
+var maternity = [];
 var filtrage = {};
 var exc_retard = ["RH","MANAGER","IT","GERANT"];
 var access = ["SHIFT 1","SHIFT 2","SHIFT WEEKEND"];
 var deduire = ["Mise a Pied","Absent","Congé sans solde"];
 var leave_checking = true;
-
+var ws_leave;
+var datestart_leave;
+var dateend_leave;
 //Mailing
 var transporter = nodemailer.createTransport({
   service: "gmail",
@@ -776,6 +780,32 @@ routeExp.route("/updateuser").post(async function (req, res) {
       res.send("User updated successfully");
 })
 })
+//update project 
+routeExp.route("/update_project").post(async function (req, res) {
+  var choice = req.body.choice.split(",");
+  var owner = req.body.owner;
+  var combined = "";
+  for (i=0;i<choice.length;i++){
+    if (i == 0){
+      combined += choice[i];
+    }
+    else{
+      combined +="/"+choice[i];
+    }
+  }
+  mongoose
+  .connect(
+    "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
+    {
+      useUnifiedTopology: true,
+      UseNewUrlParser: true,
+    }
+  )
+  .then(async () => {
+     await UserSchema.findOneAndUpdate({m_code:owner},{project:combined});
+      res.send("ok")
+  })
+})
 //Drop user 
 routeExp.route("/dropuser").post(async function (req, res) {
   var names = req.body.fname;
@@ -1159,6 +1189,158 @@ async function leftwork(locaux,session,res){
        res.redirect("/exit_u");
     });
 }
+
+//Filter leave
+routeExp.route("/monthly_leave").post(async function (req, res) {
+  session = req.session;
+   datestart_leave  = moment(req.body.datestart).format("YYYY-MM-DD");
+   dateend_leave = moment(req.body.dateend).format("YYYY-MM-DD");
+  if (session.occupation_a == "Admin"){
+    mongoose
+    .connect(
+      "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
+      {
+        useUnifiedTopology: true,
+        UseNewUrlParser: true,
+      }
+    )
+    .then(async () => {
+      maternity = await LeaveSchema.find({type:"Congé de maternité ( rien à deduire )",status:"en cours"});
+      var next_date = datestart_leave;
+      while(dateend_leave != moment(next_date).add(-1,"days").format("YYYY-MM-DD")){
+        var leave_spec = await LeaveSchema.find({date_start:next_date});
+        monthly_leave.push(leave_spec);
+        next_date = moment(next_date).add(1,"days").format("YYYY-MM-DD");
+      }
+      for (i = 1; i < monthly_leave.length; i++) {
+        for (d=0;d<monthly_leave[i].length;d++){
+           monthly_leave[0].push(monthly_leave[i][d]);
+         }
+       }
+       monthly_leave = monthly_leave[0];
+       res.send("Ok");
+    })
+    
+  }
+  else {
+    res.send("error");
+  }
+})
+routeExp.route("/leave_report").post(async function (req, res) {
+  session = req.session;
+  var newsheet_leave = ExcelFile.utils.book_new();
+  var m_leave = [];
+  var leave_report = [];
+  var merging = [];
+  newsheet_leave.Props = {
+    Title: "Rapport de congé",
+    Subject: "Rapport de congé",
+    Author: "Solumada",
+  };
+  leave_report.push(["Les absences et Congés du " + moment(datestart_leave).format("DD/MM/YYYY") +" au " + moment(dateend_leave).format("DD/MM/YYYY"),"","","","",""]);
+  var months = moment(datestart_leave).locale("Fr").format("MMMM YYYY");
+  leave_report.push(["Numbering agent","M-CODE","Nombre de jours à payer et / ou de déduction sur salaire " + months,"","","Motifs - observations ou remarques"]);
+  leave_report.push(["","","Congés ou permission à payer","Consultation ou Repos\n maladie à payer","Congés sans solde: déduction sur salaire",""]);
+  newsheet_leave.SheetNames.push("Conge " + months);
+  for (i=0;i<monthly_leave.length;i++){
+    if (m_leave.includes(monthly_leave[i].m_code)){
+
+    }
+    else{
+      m_leave.push(monthly_leave[i].m_code);
+    }
+  }
+  m_leave = m_leave.sort();
+  for (m=0;m<m_leave.length;m++){
+    var count = 0;
+    for (i=0;i<monthly_leave.length;i++){
+     
+      if (monthly_leave[i].m_code == m_leave[m]){
+        count ++;
+        if (monthly_leave[i].type.includes("Congé de maternité")){
+        }
+        else{
+          leave_report.push([monthly_leave[i].num_agent,monthly_leave[i].m_code,conge_payer(monthly_leave[i].type,monthly_leave[i].duration),repos_maladie(monthly_leave[i].type,monthly_leave[i].duration),sans_solde(monthly_leave[i].type,monthly_leave[i].duration),monthly_leave[i].duration + " jour(s) de " + monthly_leave[i].type + date_rendered(monthly_leave[i].date_start,monthly_leave[i].date_end)]);
+        }
+        
+      }
+
+    }
+    merging.push([m,count]);
+  }
+  leave_report.push(["","","","","",""]);
+  leave_report.push(["","","","","",""]);
+  for(mat=0;mat<maternity.length;mat++){
+    leave_report.push([maternity[mat].num_agent,maternity[mat].m_code, "Congé de maternité depuis " + moment(maternity[mat].date_start).format("DD/MM/YYYY") + " jusqu'au " + moment(maternity[mat].date_end).format("DD/MM/YYYY")]);
+  }
+  leave_report.push(["","",""]);
+  ws_leave = ExcelFile.utils.aoa_to_sheet(leave_report);
+  ws_leave["!cols"] = [
+    {wpx: 130 },
+    {wpx: 80},
+    {wpx: 285},
+    {wpx: 210},
+    {wpx: 210},
+    {wpx: 400 },
+  ];
+  var merge = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 5}},
+    { s: { r: 1, c: 0 }, e: { r:2 , c: 0}},
+    { s: { r: 1, c: 1 }, e: { r:2 , c:1 }},
+    { s: { r: 1, c: 2 }, e: { r:1 , c:4 }},
+    { s: { r: 1, c: 5 }, e: { r:2 , c:5 }}
+  ];
+  var last = 0;
+  var field = 0;
+  for (mr=0;mr<merging.length;mr++){
+    if (merging[mr][1] > 1){
+      merge.push( { s: { r: merging[mr][0] + 3 + last , c: 0 }, e: { r: merging[mr][0] + 3+last+ merging[mr][1] - 1, c: 0}});
+      merge.push( { s: { r: merging[mr][0] + 3 + last , c: 1 }, e: { r: merging[mr][0] + 3 + last+ merging[mr][1] - 1, c: 1}});
+      last = last + merging[mr][1] - 1;
+      field++;
+    }
+  }
+  ws_leave["!merges"] = merge;
+  style3(last,maternity.length,field);
+  newsheet_leave.Sheets["Conge " + months] = ws_leave;
+  session.filename = "Rapport congé "+months +".xlsx";
+  ExcelFile.writeFile(newsheet_leave, session.filename);
+  res.send("Ok");
+  
+})
+function conge_payer(motif,number){
+    if (motif.includes('Congé Payé') || motif.includes('Permission exceptionelle') ){
+        return number;
+    }
+    else{
+      return "";
+    }
+}
+function repos_maladie(motif,number){
+  if (motif.includes('Repos Maladie')){
+    return number;
+}
+else{
+  return "";
+}
+}
+function sans_solde(motif,number){
+  if (motif.includes('Absent') || motif.includes('Mise a Pied') || motif.includes('Congé sans solde') ){
+    return number;
+}
+else{
+  return "";
+}
+}
+function date_rendered(d1,d2){
+  if (d1 == d2){
+    return " le " +  moment(d1).format("DD/MM/YYYY");
+  }
+  else{
+    return " du " + moment(d1).format("DD/MM/YYYY") + " au "+  moment(d2).format("DD/MM/YYYY");
+  }
+}
+
 //Page leave
 routeExp.route("/leave").get(async function (req, res) {
   session = req.session;
@@ -1193,8 +1375,14 @@ routeExp.route("/leavelist").get(async function (req, res) {
       }
     )
     .then(async () => {
-      var leavelist = await LeaveSchema.find({});
-      res.render("congelist.html",{leavelist:leavelist,notif:notification});
+      if (monthly_leave.length == 0){
+        var leavelist = await LeaveSchema.find({});
+        res.render("congelist.html",{leavelist:leavelist,notif:notification});
+      }
+      else{
+        res.render("congelist.html",{leavelist:monthly_leave,notif:notification});
+      }
+     
     });
   }
   else{
@@ -1258,7 +1446,7 @@ routeExp.route("/takeleave").post(async function (req, res) {
           }
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
         }
-      if (user.leave_stat == "y" && (type == "Congé Payé" || type == "Absent" || type == "Congé sans solde")){
+      if (user.leave_stat == "y" && (type == "Congé Payé")){
         if (deduire.includes(type)){
           deduction = " ( a déduire sur salaire )";
         }
@@ -1275,9 +1463,7 @@ routeExp.route("/takeleave").post(async function (req, res) {
         validation:false
       }
       await LeaveSchema(new_leave).save();
-      if (type == "Congé Payé"){
         await UserSchema.findOneAndUpdate({m_code:user.m_code},{$inc:{remaining_leave:-taked,leave_taked:taked}});
-      }
       await conge_define(req);
       await checkleave();
       res.send("Ok");
@@ -1286,7 +1472,7 @@ routeExp.route("/takeleave").post(async function (req, res) {
       res.send("exceeds");
     }
     }
-    else if(type == "Mise a Pied" || type == "Permission exceptionelle" || type == "Repos Maladie" || type == "Congé de maternité"){
+    else if(type == "Mise a Pied" || type == "Permission exceptionelle" || type == "Repos Maladie" || type == "Congé de maternité" || type == "Absent" || type == "Congé sans solde"){
       var new_leave = {
         m_code:user.m_code,
         num_agent : user.num_agent,
@@ -1828,6 +2014,74 @@ function style(){
               top: {
                 style: "hair",
                 bottom: { style: "hair" },
+              },
+            },
+            alignment:{
+              vertical : "center",
+              horizontal:"center"
+          },
+          };
+        }
+      }
+    }
+  }
+}
+function style3(last,maternity,field){
+  var cellule = ["A", "B", "C", "D", "E", "F"];
+  for (c = 0; c < cellule.length; c++) {
+    for (i = 1; i <= monthly_leave.length +last +maternity + field; i++) {
+      if (ws_leave[cellule[c] + "" + i]) {
+        if (i == 1) {
+          ws_leave[cellule[c] + "" + i].s = {
+            font: {
+              name: "Calibri",
+              bold: true,
+              sz:18
+            },
+            alignment:{
+                vertical : "center",
+                horizontal:"center"
+            },
+          };
+        }
+        else if (i == 2 || i == 3) {
+          ws_leave[cellule[c] + "" + i].s = {
+            fill:{
+              patternType : "solid",
+              fgColor : { rgb: "FFFFFF" },
+              bgColor: { rgb: "FFFFFF" },
+            },
+            font: {
+              name: "Calibri",
+              sz:11,
+              bold: true,
+            },
+            border: {
+              left: { style: "thin" },
+              right: { style: "thin" },
+              top: {
+                style: "thin",
+                bottom: { style: "thin" },
+              },
+            },
+            alignment:{
+                vertical : "center",
+                horizontal:"center"
+            },
+          };
+        } 
+        else {
+          ws_leave[cellule[c] + "" + i].s = {
+            font: {
+              name: "Calibri",
+              sz:11
+            },
+            border: {
+              left: { style: "thin" },
+              right: { style: "thin" },
+              top: {
+                style: "thin",
+                bottom: { style: "thin" },
               },
             },
             alignment:{

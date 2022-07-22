@@ -19,6 +19,7 @@ const User = mongoose.Schema({
    leave_taked:Number,
    leave_stat:String,
    save_at:String,
-   user_ht:Number
+   user_ht:Number,
+   project:String
 })
 module.exports = mongoose.model('cuser',User);

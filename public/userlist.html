@@ -20,21 +20,31 @@
       rel="icon"
       type="image/png"
       sizes="16x16"
-      href="../assets/images1/logo.jpg"
+      href="assets/images1/logo.jpg"
     />
     <!-- Custom CSS -->
     <link
       rel="stylesheet"
       type="text/css"
-      href="../assets/extra-libs/multicheck/multicheck.css"
+      href="assets/extra-libs/multicheck/multicheck.css"
     />
     <link
-      href="../assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css"
+      rel="stylesheet"
+      type="text/css"
+      href="assets/libs/select2/dist/css/select2.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="assets/libs/jquery-minicolors/jquery.minicolors.css"
+    />
+    <link
+      href="assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css"
       rel="stylesheet"
     />
     <link rel="stylesheet" type="text/css" href="/assets/css1/main.css">
     <link rel="stylesheet" href="assets/libs/bootstrap/dist/css/bootstrap.css">
-    <link href="../dist/css/style.min.css" rel="stylesheet" />
+    <link href="dist/css/style.min.css" rel="stylesheet" />
    
   
     <link rel="stylesheet" href="assets/magnific-popup/magnific-popup.css">
@@ -406,6 +416,7 @@
                           <th>Numéro d'agent</th>
                           <th>Shift</th>
                           <th>Fonction</th>
+                          <th>Projet(s)</th>
                           <th>Actions</th>
                         </tr>
                       </thead>
@@ -418,6 +429,198 @@
                               <td align="center"><%= user.num_agent %></td>
                               <td align="center"><%= user.shift %></td>
                               <td align="center"><%= user.occupation %></td>
+                              <td align="center" >
+                                  <select
+                                    class="select2 form-select shadow-none mt-3"
+                                    multiple="multiple"
+                                    style="height: 36px; width:500px "
+                                    id="<%= user.m_code %>"
+                                    onchange="update_project_user('<%= user.m_code %>')"
+                                  >
+                                  <optgroup label="IA">
+                                    <option value="IA (Intelligence Artificielle)"
+                                    <% if (user.project.includes("IA (Intelligence Artificielle)")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >IA (Intelligence Artificielle)</option>
+                                    <option value="Agent Senior IA"
+                                    <% if (user.project.includes("Agent Senior IA")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >Agent Senior IA</option>
+                                  </optgroup>
+                                  <optgroup label="Agrobox">
+                                    <option value="AGROBOX (V1)" 
+                                    <% if (user.project.includes("AGROBOX (V1)")) { %>
+                                        <%- 'selected' %> 
+                                    <% } %>
+                                    >AGROBOX (V1)</option>
+                                    <option value="AGROBOX (V2)"
+                                    <% if (user.project.includes("AGROBOX (V2)")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >AGROBOX (V2)</option>
+                                    <option value="AGROBOX (V3)"
+                                    <% if (user.project.includes("AGROBOX (V3)")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >AGROBOX (V3)</option>
+                                  </optgroup>
+                                  <optgroup label="Arco">
+                                    <option  value="ARCO (V1)"
+                                    <% if (user.project.includes("ARCO (V1)")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >ARCO (V1)</option>
+                                    <option value="ARCO (V2)"
+                                    <% if (user.project.includes("ARCO (V2)")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >ARCO (V2)</option>
+                                    <option value="ARCO (V3)"
+                                    <% if (user.project.includes("ARCO (V3)")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >ARCO (V3)</option>
+                                  </optgroup>
+                                  <optgroup label="Dps">
+                                    <option value="DPS (V1)"
+                                    <% if (user.project.includes("DPS (V1)")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >DPS (V1)</option>
+                                    <option value="DPS (V2)"
+                                    <% if (user.project.includes("DPS (V2)")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >DPS (V2)</option>
+                                    <option value="DPS (V3)"
+                                    <% if (user.project.includes("DPS (V3)")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >DPS (V3)</option>
+                                  </optgroup>
+                                  <optgroup label="Duval">
+                                    <option value="DUVAL"
+                                    <% if (user.project.includes("DUVAL")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >DUVAL</option>
+                                  </optgroup>
+                                  <optgroup label="Gazette">
+                                    <option value="GAZETTE"
+                                    <% if (user.project.includes("GAZETTE")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >GAZETTE</option>
+                                  </optgroup>
+                                  <optgroup label="Huvepharma">
+                                    <option value="HUVEPHARMA"
+                                    <% if (user.project.includes("HUVEPHARMA")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >HUVEPHARMA</option>
+                                  </optgroup>
+                                  <optgroup label="Jefacture">
+                                    <option value="JEFACTURE"
+                                    <% if (user.project.includes("JEFACTURE")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >JEFACTURE</option>
+                                  </optgroup>
+                                  <optgroup label="Nbb">
+                                    <option value="NBB"
+                                    <% if (user.project.includes("NBB")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >NBB</option>
+                                  </optgroup>
+                                  <optgroup label="Pwc">
+                                    <option value="PWC (V1)"
+                                    <% if (user.project.includes("PWC (V1)")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >PWC (V1)</option>
+                                    <option value="PWC (V2)"
+                                    <% if (user.project.includes("PWC (V2)")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >PWC (V2)</option>
+                                    <option value="PWC (V3)"
+                                    <% if (user.project.includes("PWC (V3)")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >PWC (V3)</option>
+                                  </optgroup>
+                                  <optgroup label="Reporting Operationnel">
+                                      <option value="REPORTING OPERATIONNEL"
+                                      <% if (user.project.includes("REPORTING OPERATIONNEL")) { %>
+                                        <%- 'selected' %> 
+                                    <% } %>
+                                      >REPORTING OPERATIONNEL</option>
+                                    </optgroup>
+                                    <optgroup label="Spotcheck">
+                                      <option value="SPOTCHECK"
+                                      <% if (user.project.includes("SPOTCHECK")) { %>
+                                        <%- 'selected' %> 
+                                    <% } %>
+                                      >SPOTCHECK</option>
+                                    </optgroup>
+                                    <optgroup label="Up">
+                                      <option value="UP (Unified Post)"
+                                      <% if (user.project.includes("UP (Unified Post)")) { %>
+                                        <%- 'selected' %> 
+                                    <% } %>
+                                      >UP (Unified Post)</option>
+                                    </optgroup>
+                                    <optgroup label="Upc">
+                                      <option value="UPC"
+                                      <% if (user.project.includes("UPC")) { %>
+                                        <%- 'selected' %> 
+                                    <% } %>
+                                      >UPC</option>
+                                    </optgroup>
+                                    <optgroup label="Vandorp">
+                                      <option value="CC VANDORP"
+                                      <% if (user.project.includes("CC VANDORP")) { %>
+                                        <%- 'selected' %> 
+                                    <% } %>
+                                      >CC VANDORP</option>
+                                      <option value="VANDORP (V1)"
+                                      <% if (user.project.includes("VANDORP (V1)")) { %>
+                                        <%- 'selected' %> 
+                                    <% } %>
+                                      >VANDORP (V1)</option>
+                                      <option value="VANDORP (V2)"
+                                      <% if (user.project.includes("VANDORP (V2)")) { %>
+                                        <%- 'selected' %> 
+                                    <% } %>
+                                      >VANDORP (V2)</option>
+                                      <option value="VANDORP (V3)"
+                                      <% if (user.project.includes("VANDORP (V3)")) { %>
+                                        <%- 'selected' %> 
+                                    <% } %>
+                                      >VANDORP (V3)</option>
+                                    </optgroup>
+                                    <optgroup label="Willemen">
+                                      <option value="WILLEMEN (V1)"
+                                      <% if (user.project.includes("WILLEMEN (V1)")) { %>
+                                        <%- 'selected' %> 
+                                    <% } %>
+                                      >WILLEMEN (V1)</option>
+                                      <option value="WILLEMEN (V2)"
+                                      <% if (user.project.includes("WILLEMEN (V2)")) { %>
+                                        <%- 'selected' %> 
+                                    <% } %>
+                                      >WILLEMEN (V2)</option>
+                                      <option value="WILLEMEN (V3)"
+                                      <% if (user.project.includes("WILLEMEN (V3)")) { %>
+                                        <%- 'selected' %> 
+                                    <% } %>
+                                      >WILLEMEN (V3)</option>
+                                    </optgroup>
+                                    </select>
+                                  </td>
                               <td align="center" style="width: 60px;">
                                 <div class="row" style="width: 100px;">
                                 <div class="col-sm-6 text-left">
@@ -436,6 +639,7 @@
                                 <td align="center">N/A</td>
                                 <td align="center">N/A</td>
                                 <td align="center"><%= user.occupation %></td>
+                                <td align="center">N/A</td>
                                 <td align="center" style="width: 60px;">
                                   <div class="" class="row" style="width: 100px;">
                                   <div class="col-sm-12">
@@ -519,7 +723,7 @@
 						<footer class="card-footer">
 							<div class="row">
 								<div class="col-md-12 text-right">
-									<button id ="btnu" class="btn btn-primary modal-confirm" onclick="modify()">Update</button>
+									<button id ="btnu" class="btn btn-primary modal-confirm" onclick="modify()">Mettre à jour</button>
 									<button class="btn btn-default modal-dismiss" style="color:aliceblue">Cancel</button>
 								</div>
 							</div>
@@ -531,7 +735,7 @@
      <div style="margin-left: 25%;background: rgba(233, 71, 30, 0.5);width:50%" id="modalDanger" class="modal-block modal-block-danger mfp-hide">
       <section class="card-body">
           <header class="panel-heading">
-              <h2 class="panel-title" style="color: aliceblue;">Are you sure?</h2>
+              <h2 class="panel-title" style="color: aliceblue;">Vous êtes sur?</h2>
           </header>
           <div class="card-body">
               <div class="modal-wrapper">
@@ -539,7 +743,7 @@
                       <i class="fa fa-times-circle"></i>
                   </div>
                   <div class="modal-text">
-                      <h4 style="color: aliceblue;">User deletion</h4>
+                      <h4 style="color: aliceblue;">Suppression d'utilisateur</h4>
                       <p id="textwarn"></p>
                   </div>
               </div>
@@ -575,9 +779,11 @@
     <script src="../dist/js/custom.min.js"></script>
     <!-- this page js -->
     <script src="../assets/extra-libs/multicheck/datatable-checkbox-init.js"></script>
-    <script src="../assets/extra-libs/multicheck/jquery.multicheck.js"></script>
+    <script src="assets/extra-libs/multicheck/jquery.multicheck.js"></script>
     <script src="../assets/extra-libs/DataTables/datatables.min.js"></script>
     <script src="assets/magnific-popup/magnific-popup.js"></script>
+    <script src="assets/libs/select2/dist/js/select2.full.min.js"></script>
+    <script src="assets/libs/select2/dist/js/select2.min.js"></script>
     <script src="assets/js1/examples.modals.js"></script>
     <script src="/js_code/update_user.js"></script>
     <script src="/js_code/socket.js"></script>
@@ -643,7 +849,11 @@
       /****************************************
        *       Basic Table                   *
        ****************************************/
-      $("#zero_config").DataTable();
+      $("#zero_config").DataTable({
+        "pageLength" : 162
+      });
+        $(".select2").select2();
     </script>
+      
   </body>
 </html>
