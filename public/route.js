@@ -1258,7 +1258,7 @@ routeExp.route("/takeleave").post(async function (req, res) {
           }
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
         }
-      if (user.leave_stat == "y" && (type == "Congé Payé" || type == "Absent" || type == "Congé sans solde")){
+      if (user.leave_stat == "y" && (type == "Congé Payé")){
         if (deduire.includes(type)){
           deduction = " ( a déduire sur salaire )";
         }
@@ -1275,9 +1275,7 @@ routeExp.route("/takeleave").post(async function (req, res) {
         validation:false
       }
       await LeaveSchema(new_leave).save();
-      if (type == "Congé Payé"){
-        await UserSchema.findOneAndUpdate({m_code:user.m_code},{$inc:{remaining_leave:-taked,leave_taked:taked}});
-      }
+      await UserSchema.findOneAndUpdate({m_code:user.m_code},{$inc:{remaining_leave:-taked,leave_taked:taked}});
       await conge_define(req);
       await checkleave();
       res.send("Ok");
@@ -1286,7 +1284,7 @@ routeExp.route("/takeleave").post(async function (req, res) {
       res.send("exceeds");
     }
     }
-    else if(type == "Mise a Pied" || type == "Permission exceptionelle" || type == "Repos Maladie" || type == "Congé de maternité"){
+    else if(type == "Mise a Pied" || type == "Permission exceptionelle" || type == "Repos Maladie" || type == "Congé de maternité" || type == "Absent" || type == "Congé sans solde"){
       var new_leave = {
         m_code:user.m_code,
         num_agent : user.num_agent,
