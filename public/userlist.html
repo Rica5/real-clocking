@@ -514,6 +514,13 @@
                                   <% } %>
                                     >GAZETTE</option>
                                   </optgroup>
+                                  <optgroup label="Giseurope">
+                                    <option value="GISEUROPE"
+                                    <% if (user.project.includes("GISEUROPE")) { %>
+                                      <%- 'selected' %> 
+                                  <% } %>
+                                    >GISEUROPE</option>
+                                  </optgroup>
                                   <optgroup label="Huvepharma">
                                     <option value="HUVEPHARMA"
                                     <% if (user.project.includes("HUVEPHARMA")) { %>

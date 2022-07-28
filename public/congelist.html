@@ -432,6 +432,7 @@
                           <th>Nombre de jour</th>
                           <th>Type</th>
                           <th>Status</th>
+                          <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -443,6 +444,11 @@
                                 <td><%= leavelist.duration %></td>
                                 <td><%= leavelist.type %></td>
                                 <td><%= leavelist.status %></td>
+                                <td align="center">
+                                  <div class="col-sm-12">
+                                    <a class="mb-xs mt-xs mr-xs modal-basic"  href="#modalDanger"><button type="button" onclick='delete_leave("<%= leavelist._id %>","<%= leavelist.nom %>")' class="btn btn-danger btn-circle btn-sm text-center"><i class="fas fa-times-circle"></i></button></a>
+                                  </div>
+                                </td>
                             </tr>		   
                       <% }); %>
                       </tbody>
@@ -460,6 +466,33 @@
                         <a class="mb-xs mt-xs mr-xs modal-with-zoom-anim" href="#modalAnim"><button id="generate_excel" class="btn btn-primary btn-mb pull-left"><i class="fas fa-file-excel"></i> GENERATE EXCEL </button><img id="loading"  src="assets/images1/loading.gif" style="width: 40px;height:auto;display:none;"></a>
                         <a href="/download"><button id="download" onclick="downloads()" class="btn btn-success btn-mb pull-right" style="float:right;"><i class="fa fa-download"></i> DOWNLOAD</button></a>
                       </div>
+                       <!-- MOdal Danger-->
+                       <div style="margin-left: 25%;background: rgba(233, 71, 30, 0.5);width:50%" id="modalDanger" class="modal-block modal-block-danger mfp-hide">
+                        <section class="card-body">
+                            <header class="panel-heading">
+                                <h2 class="panel-title" style="color: aliceblue;">Vous êtes sur?</h2>
+                            </header>
+                            <div class="card-body">
+                                <div class="modal-wrapper">
+                                    <div class="modal-icon">
+                                        <i class="fa fa-times-circle"></i>
+                                    </div>
+                                    <div class="modal-text">
+                                        <h4 id="del_leave" style="color: aliceblue;">Suppression d'utilisateur</h4>
+                                        <p id="textwarn"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <footer class="card-footer">
+                                <div class="row">
+                                    <div class="col-md-12 text-right">
+                                        <button class="btn btn-primary modal-confirm" onclick="send_delete()">Confirm</button>
+                                        <button class="btn btn-default modal-dismiss" >Cancel</button>
+                                    </div>
+                                </div>
+                            </footer>
+                        </section>
+                    </div>
                       <div style="margin-left: 25%;background: rgba(5, 170, 235, 0.5);width:50%" id="modalAnim" class="zoom-anim-dialog modal-block modal-block-primary mfp-hide">
                         <section class="card-body">
                           <header class="panel-heading">

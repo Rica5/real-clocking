@@ -27,6 +27,7 @@ var access = ["SHIFT 1","SHIFT 2","SHIFT WEEKEND"];
 var deduire = ["Mise a Pied","Absent","Congé sans solde"];
 var leave_checking = true;
 var ws_leave;
+var ws_left;
 var datestart_leave;
 var dateend_leave;
 //Mailing
@@ -77,11 +78,11 @@ routeExp.route("/login").post(async function (req, res) {
 });
 routeExp.route("/getip").post(async function (req, res) {
   session = req.session;
-  await set_ip(req.body.ip,session,res);
-});
-async function set_ip(ip_get,session,res){
-  session.ip = ip_get;
+  await set_ip(req.body.ip,session);
   res.send("Ok");
+});
+async function set_ip(ip_get,session){
+  session.ip = ip_get;
 }
 async function login(username,pwd,session,res){
   mongoose
@@ -1010,7 +1011,6 @@ routeExp.route("/filter").post(async function (req, res) {
         for (i = 0; i <= day; i++) {
           filtrage.date = datestart;
           date_data.push(filtrage.date);
-         
           if (filtrage.search){
             getdata = await StatusSchema.find({$or: 
               [{ m_code: {'$regex':searchit,'$options' : 'i'} },
@@ -1226,9 +1226,33 @@ routeExp.route("/monthly_leave").post(async function (req, res) {
     res.send("error");
   }
 })
+//leave delete
+routeExp.route("/delete_leave").post(async function (req, res) {
+    session = req.session;
+    var id = req.body.id;
+    if (session.occupation_a == "Admin"){
+      mongoose
+      .connect(
+        "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
+        {
+          useUnifiedTopology: true,
+          UseNewUrlParser: true,
+        }
+      )
+      .then(async () => {
+        var leave_to_delete = await LeaveSchema.findOne({_id:id});
+      await UserSchema.findOneAndUpdate({m_code:leave_to_delete.m_code},{$inc:{remaining_leave:leave_to_delete.duration,leave_taked:-leave_to_delete.duration}});
+      await LeaveSchema.findOneAndDelete({_id:id});
+      res.send("Ok");
+      })
+    } else{
+      res.send("error");
+    }
+})
 routeExp.route("/leave_report").post(async function (req, res) {
   session = req.session;
-  var newsheet_leave = ExcelFile.utils.book_new();
+  if (session.occupation_a == "Admin"){
+    var newsheet_leave = ExcelFile.utils.book_new();
   var m_leave = [];
   var leave_report = [];
   var merging = [];
@@ -1237,10 +1261,10 @@ routeExp.route("/leave_report").post(async function (req, res) {
     Subject: "Rapport de congé",
     Author: "Solumada",
   };
-  leave_report.push(["Les absences et Congés du " + moment(datestart_leave).format("DD/MM/YYYY") +" au " + moment(dateend_leave).format("DD/MM/YYYY"),"","","","",""]);
+  leave_report.push(["Les absences et Congés du " + moment(datestart_leave).format("DD/MM/YYYY") +" au " + moment(dateend_leave).format("DD/MM/YYYY"),"","","","","",""]);
   var months = moment(datestart_leave).locale("Fr").format("MMMM YYYY");
-  leave_report.push(["Numbering agent","M-CODE","Nombre de jours à payer et / ou de déduction sur salaire " + months,"","","Motifs - observations ou remarques"]);
-  leave_report.push(["","","Congés ou permission à payer","Consultation ou Repos\n maladie à payer","Congés sans solde: déduction sur salaire",""]);
+  leave_report.push(["Numbering agent","M-CODE","Nombre de jours à payer et / ou de déduction sur salaire " + months,"","","","Motifs - observations ou remarques"]);
+  leave_report.push(["","","Congés payer","Permission exceptionelle","Consultation ou Repos\n maladie à payer","Congés sans solde: déduction sur salaire",""]);
   newsheet_leave.SheetNames.push("Conge " + months);
   for (i=0;i<monthly_leave.length;i++){
     if (m_leave.includes(monthly_leave[i].m_code)){
@@ -1260,7 +1284,7 @@ routeExp.route("/leave_report").post(async function (req, res) {
         if (monthly_leave[i].type.includes("Congé de maternité")){
         }
         else{
-          leave_report.push([monthly_leave[i].num_agent,monthly_leave[i].m_code,conge_payer(monthly_leave[i].type,monthly_leave[i].duration),repos_maladie(monthly_leave[i].type,monthly_leave[i].duration),sans_solde(monthly_leave[i].type,monthly_leave[i].duration),monthly_leave[i].duration + " jour(s) de " + monthly_leave[i].type + date_rendered(monthly_leave[i].date_start,monthly_leave[i].date_end)]);
+          leave_report.push([monthly_leave[i].num_agent,monthly_leave[i].m_code,conge_payer(monthly_leave[i].type,monthly_leave[i].duration),permission_exceptionelle(monthly_leave[i].type,monthly_leave[i].duration),repos_maladie(monthly_leave[i].type,monthly_leave[i].duration),sans_solde(monthly_leave[i].type,monthly_leave[i].duration),monthly_leave[i].duration + " jour(s) de " + monthly_leave[i].type + date_rendered(monthly_leave[i].date_start,monthly_leave[i].date_end)]);
         }
         
       }
@@ -1268,27 +1292,28 @@ routeExp.route("/leave_report").post(async function (req, res) {
     }
     merging.push([m,count]);
   }
-  leave_report.push(["","","","","",""]);
-  leave_report.push(["","","","","",""]);
+  leave_report.push(["","","","","","",""]);
+  leave_report.push(["","","","","","",""]);
   for(mat=0;mat<maternity.length;mat++){
     leave_report.push([maternity[mat].num_agent,maternity[mat].m_code, "Congé de maternité depuis " + moment(maternity[mat].date_start).format("DD/MM/YYYY") + " jusqu'au " + moment(maternity[mat].date_end).format("DD/MM/YYYY")]);
   }
   leave_report.push(["","",""]);
   ws_leave = ExcelFile.utils.aoa_to_sheet(leave_report);
   ws_leave["!cols"] = [
-    {wpx: 130 },
-    {wpx: 80},
+    {wpx: 100 },
+    {wpx: 60},
     {wpx: 285},
+    {wpx: 150},
     {wpx: 210},
     {wpx: 210},
     {wpx: 400 },
   ];
   var merge = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 5}},
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 6}},
     { s: { r: 1, c: 0 }, e: { r:2 , c: 0}},
     { s: { r: 1, c: 1 }, e: { r:2 , c:1 }},
-    { s: { r: 1, c: 2 }, e: { r:1 , c:4 }},
-    { s: { r: 1, c: 5 }, e: { r:2 , c:5 }}
+    { s: { r: 1, c: 2 }, e: { r:1 , c:5 }},
+    { s: { r: 1, c: 6 }, e: { r:2 , c:6 }}
   ];
   var last = 0;
   var field = 0;
@@ -1306,15 +1331,83 @@ routeExp.route("/leave_report").post(async function (req, res) {
   session.filename = "Rapport congé "+months +".xlsx";
   ExcelFile.writeFile(newsheet_leave, session.filename);
   res.send("Ok");
+  }
+  else {
+    res.send("error");
+  }
   
 })
+//Leave restants
+routeExp.route("/leave_left").post(async function (req, res) {
+  session = req.session;
+  if (session.occupation_a == "Admin"){
+    var newsheet_left = ExcelFile.utils.book_new();
+  var leave_left = [];
+  var months = moment(datestart_leave).locale("Fr").format("MMMM YYYY");
+  newsheet_left.Props = {
+    Title: "Congé restants",
+    Subject: "Congé restants",
+    Author: "Solumada",
+  };
+  newsheet_left.SheetNames.push("Conge " + months);
+  mongoose
+    .connect(
+      "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
+      {
+        useUnifiedTopology: true,
+        UseNewUrlParser: true,
+      }
+    )
+    .then(async () => {
+      leave_left.push(["CONGES PAYES ARRETES DU MOIS DE "+ months,"","","","","",""]);
+      leave_left.push(["Nom & Prénom","Numbering Agent","M-code","Embauche","Projet(s)","Congés déja pris","Congés restants"]);
+      var data_leave_left = await UserSchema.find({occupation:"User"}).sort({
+        "first_name": 1,
+      });
+      for (dl=0;dl<data_leave_left.length;dl++){
+        leave_left.push([data_leave_left[dl].first_name + " " + data_leave_left[dl].last_name,data_leave_left[dl].num_agent,data_leave_left[dl].m_code,moment(data_leave_left[dl].save_at).format("DD/MM/YYYY"),data_leave_left[dl].project,data_leave_left[dl].leave_taked,data_leave_left[dl].remaining_leave]);
+      }
+      leave_left.push(["","","","","",""]);
+      ws_left = ExcelFile.utils.aoa_to_sheet(leave_left);
+  ws_left["!cols"] = [
+    {wpx: 325 },
+    {wpx: 125},
+    {wpx: 85},
+    {wpx: 125},
+    {wpx: 300},
+    {wpx: 125},
+    {wpx: 125},
+  ];
+  const merge = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 6}},
+  ];
+  ws_left["!merges"] = merge;
+  style4(leave_left);
+  newsheet_left.Sheets["Conge " + months] = ws_left;
+  session.filename = "CONGE PAYES DU MOIS "+months +".xlsx";
+  ExcelFile.writeFile(newsheet_left, session.filename);
+  res.send("Ok");
+    })
+  }
+  else {
+    res.send("error");
+  }
+})
 function conge_payer(motif,number){
-    if (motif.includes('Congé Payé') || motif.includes('Permission exceptionelle') ){
+    if (motif.includes('Congé Payé')){
         return number;
     }
     else{
       return "";
     }
+}
+function permission_exceptionelle(motif,number){
+  if (motif.includes('Permission exceptionelle')){
+      return number;
+  }
+  else{
+    return "";
+  }
 }
 function repos_maladie(motif,number){
   if (motif.includes('Repos Maladie')){
@@ -1354,7 +1447,7 @@ routeExp.route("/leave").get(async function (req, res) {
     }
   )
   .then(async () => {
-    var alluser = await UserSchema.find({});
+    var alluser = await UserSchema.find({occupation:"User"});
     res.render("conge.html",{users:alluser,notif:notification});
   })
 }
@@ -1511,7 +1604,8 @@ async function leave_permission(user){
   })
 }
 async function conge_define(req){
-  mongoose
+  try {
+    mongoose
   .connect(
     "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
     {
@@ -1548,6 +1642,9 @@ async function conge_define(req){
       }
   }
   })
+  } catch (error) {
+    
+  }
 }
 //checkleave
 async function checkleave(){
@@ -1713,7 +1810,7 @@ routeExp.route("/generate").post(async function (req, res) {
           delete filtrage.searchit;
           delete filtrage.date;
           delete filtrage.search;
-          data_desired.datatowrite = await StatusSchema.find();
+          data_desired.datatowrite = await StatusSchema.find({});
         }
       res.send("Done");
     });
@@ -2027,7 +2124,7 @@ function style(){
   }
 }
 function style3(last,maternity,field){
-  var cellule = ["A", "B", "C", "D", "E", "F"];
+  var cellule = ["A", "B", "C", "D", "E", "F","G"];
   for (c = 0; c < cellule.length; c++) {
     for (i = 1; i <= monthly_leave.length +last +maternity + field; i++) {
       if (ws_leave[cellule[c] + "" + i]) {
@@ -2075,6 +2172,74 @@ function style3(last,maternity,field){
             font: {
               name: "Calibri",
               sz:11
+            },
+            border: {
+              left: { style: "thin" },
+              right: { style: "thin" },
+              top: {
+                style: "thin",
+                bottom: { style: "thin" },
+              },
+            },
+            alignment:{
+              vertical : "center",
+              horizontal:"center"
+          },
+          };
+        }
+      }
+    }
+  }
+}
+function style4(leave_left){
+  var cellule = ["A", "B", "C", "D", "E", "F","G"];
+  for (c = 0; c < cellule.length; c++) {
+    for (i = 1; i <= leave_left.length; i++) {
+      if (ws_left[cellule[c] + "" + i]) {
+        if (i == 1) {
+          ws_left[cellule[c] + "" + i].s = {
+            font: {
+              name: "Calibri",
+              bold: true,
+              sz:18
+            },
+            alignment:{
+                vertical : "center",
+                horizontal:"center"
+            },
+          };
+        }
+        else if (i == 2) {
+          ws_left[cellule[c] + "" + i].s = {
+            fill:{
+              patternType : "solid",
+              fgColor : { rgb: "FFFFFF" },
+              bgColor: { rgb: "FFFFFF" },
+            },
+            font: {
+              name: "Calibri",
+              sz:14,
+              bold: true,
+            },
+            border: {
+              left: { style: "thin" },
+              right: { style: "thin" },
+              top: {
+                style: "thin",
+                bottom: { style: "thin" },
+              },
+            },
+            alignment:{
+                vertical : "center",
+                horizontal:"center"
+            },
+          };
+        } 
+        else {
+          ws_left[cellule[c] + "" + i].s = {
+            font: {
+              name: "Calibri",
+              sz:14
             },
             border: {
               left: { style: "thin" },
@@ -2301,7 +2466,7 @@ function generate_excel(datatowrites,retard,absent,conge,code) {
           conge[i].type,
         ];
         data.push(lateligne);
-        cumg += date_diff(conge[i].date_start,conge[i].date_end);
+        cumg += conge[i].duration;
     }
   }
     data.push(["", "", "","", "TOTAL", cumg + " jour(s)"]);

@@ -5,14 +5,19 @@ var dateend = document.getElementById("dateend");
 var user_selected = document.getElementById("user_selected");
 var remaining_leave = document.getElementById("remaining_leave");
 var leave_taked = document.getElementById("leave_taked");
+var loading = document.getElementById("loading");
 var tp = document.getElementById("tp");
 var sh1 = document.getElementById("sh1");
 var sh2 = document.getElementById("sh2");
 var sh3 = document.getElementById("sh3");
+var shv = document.getElementById("shv");
 var dev = document.getElementById("dev");
 var tl = document.getElementById("tl");
 var adm = document.getElementById("adm");
 var pde = document.getElementById("pde");
+var generate_excel = document.getElementById("generate_excel");
+var btndownload = document.getElementById("download");
+btndownload.disabled = true;
 var edit_leave = "n";
 var occupation = document.getElementById("occupation");
 var info = document.getElementById("info");
@@ -20,6 +25,7 @@ var ids = "";
 var dj = document.getElementById("demi");
 var oj = document.getElementById("one");
 var already;
+var btnsave = document.getElementById("save_leave");
 function getdata(url,id) {
     var http = new XMLHttpRequest();
     http.open("POST", url, true);
@@ -60,6 +66,7 @@ function getdata(url,id) {
     http.send("id="+id);
   }
 function define_leave(){
+  btnsave.disabled = true;
     if (oj.checked || dj.checked){
       if(oj.checked){
         if (type_leave.value == "" && datestart.value == ""){
@@ -114,6 +121,7 @@ function take_leave(url,type,startings,endings,val) {
     http.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
         if (this.responseText == "Ok"){
+          btnsave.disabled = false;
           if (edit_leave != "n"){
             info.innerHTML = "Congé pour " + username.textContent + " modifier avec succés";
             info.style.display = "block";
@@ -143,4 +151,21 @@ function take_leave(url,type,startings,endings,val) {
       }
     };
     http.send("id="+ids+"&type="+type+"&leavestart="+startings+"&leaveend="+endings+"&court="+val+"&edit="+edit_leave);
+  }
+  function generate(){
+    loading.style.display = "block";
+    var http = new XMLHttpRequest();
+    http.open("POST", "/leave_left", true);
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+          btndownload.disabled = false;
+          generate_excel.disabled = true;
+          loading.style.display = "none";
+      }
+    }
+    http.send();
+  }
+  function downloads(){
+    btndownload.disabled = true;
   }
