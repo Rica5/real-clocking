@@ -74,18 +74,19 @@ routeExp.route("/latelist").get(async function (req, res) {
 //Login post
 routeExp.route("/login").post(async function (req, res) {
   session = req.session;
-  await login(req.body.username.trim(),req.body.pwd.trim(),req.session,res);
+  await login(req.body.username.trim(),req.body.pwd.trim(),session,res);
 });
 routeExp.route("/getip").post(async function (req, res) {
   session = req.session;
-  await set_ip(req.body.ip,req.session);
+  await set_ip(req.body.ip,session);
   res.send("Ok");
 });
 async function set_ip(ip_get,session){
   session.ip = ip_get;
 }
 async function login(username,pwd,session,res){
-  mongoose
+  
+    mongoose
     .connect(
       "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
       {
@@ -94,144 +95,152 @@ async function login(username,pwd,session,res){
       }
     )
     .then(async () => {
-      let hash = crypto.createHash('md5').update(pwd).digest("hex");
-      var logger = await UserSchema.findOne({
-        username: username,
-        password: hash,
-      });
-      if (logger) { 
-        //Tete
-        if ((access.includes(logger.shift)) && ((session.ip != "102.16.44.83" && session.ip != "102.16.26.233" && session.ip != "102.16.26.115" && session.ip != "41.63.146.186"))){
-          res.render("denied.html");
-        }
-        else{
-        if (logger.change != "n"){
-          if (logger.occupation == "User") {
-            session.occupation_u = logger.occupation;
-            session.m_code = logger.m_code;
-            session.shift = logger.shift;
-            session.forget = "n";
-            if (await StatusSchema.findOne({m_code:session.m_code,time_end:"",date:{$ne:moment().format("YYYY-MM-DD")}})){
-                session.forget ="y";
-                await UserSchema.findOneAndUpdate({m_code:session.m_code},{act_stat:"LEFTING",act_loc:"Not defined",late:"n",count:0});
-            }
-           
-          if (difference_year(logger.save_at) && logger.leave_stat == "n"){
-              await leave_permission(session.m_code);
-          }
-          if (logger.act_stat == "VACATION"){
-            session.occupation_u = null;
-            session.m_code = null;
-            session.shift = null;
-            res.render("Login.html", {
-              erreur: "Vous êtes en congé prenez votre temps",
-            });
+      try {
+        let hash = crypto.createHash('md5').update(pwd).digest("hex");
+        var logger = await UserSchema.findOne({
+          username: username,
+          password: hash,
+        });
+        if (logger) {
+          //Tete
+          if ((access.includes(logger.shift)) && ((session.ip != "102.16.44.83" && session.ip != "102.16.26.233" && session.ip != "102.16.26.115" && session.ip != "41.63.146.186"))){
+            res.render("denied.html");
           }
           else{
-            session.time = "y";
-            if (await StatusSchema.findOne({m_code:session.m_code,date:moment().format("YYYY-MM-DD")})){
-              session.late = "y";
+          if (logger.change != "n"){
+            if (logger.occupation == "User") {
+              session.occupation_u = logger.occupation;
+              session.m_code = logger.m_code;
+              session.shift = logger.shift;
+              session.forget = "n";
+              if (await StatusSchema.findOne({m_code:session.m_code,time_end:"",date:{$ne:moment().format("YYYY-MM-DD")}})){
+                  session.forget ="y";
+                  await UserSchema.findOneAndUpdate({m_code:session.m_code},{act_stat:"LEFTING",act_loc:"Not defined",late:"n",count:0});
+              }
+             
+            if (difference_year(logger.save_at) && logger.leave_stat == "n"){
+                await leave_permission(session.m_code);
+            }
+            if (logger.act_stat == "VACATION"){
+              session.occupation_u = null;
+              session.m_code = null;
+              session.shift = null;
+              res.render("Login.html", {
+                erreur: "Vous êtes en congé prenez votre temps",
+              });
+            }
+            else{
+              session.time = "y";
+              if (await StatusSchema.findOne({m_code:session.m_code,date:moment().format("YYYY-MM-DD")})){
+                session.late = "y";
+                await UserSchema.findOneAndUpdate({m_code:session.m_code},{late:"y"});
+              }
+              else{
+                session.late = "n";
+                await UserSchema.findOneAndUpdate({m_code:session.m_code},{late:"n"});
+              }
+              session.name = logger.first_name + " " + logger.last_name;
+              session.num_agent = logger.num_agent;
+              var late = await LateSchema.findOne({m_code:session.m_code,date:moment().format("YYYY-MM-DD"),reason:""});
+              if (late){
+                session.time = late.time + " minutes";
+                res.redirect("/employee");
+            }
+            else{
+              var already = await LateSchema.findOne({m_code:session.m_code,date:moment().format("YYYY-MM-DD")});
+              session.time = "y";
+              if (already){
+                res.redirect("/employee");
+              }
+              else{
+                if (session.late == "n"){
+                var start="";
+                var today = moment().day();
+              switch(session.shift){
+                case "SHIFT 1": start = "06:15";break;
+                case "SHIFT 2": start = "12:15";break;
+                case "SHIFT 3": start = "18:15";break;
+                case "TL": start = "21:00";break;
+                case "ENG" : start = "09:00";break;
+                case "IT" : start = "21:00";break;
+                case "RH" : start = "21:00";break;
+                case "MANAGER" : start = "21:00";break;
+                case "GERANT" : start = "21:00";break;
+                default: start = "08:00";break;
+              }
+              switch(today){
+                case 6 : start="08:00";break;
+                case 7 : start="08:00";break;
+              }
+              if (exc_retard.includes(session.shift)){
+                start = "21:00";
+              }
+              var timestart = moment().add(3,'hours').format("HH:mm");
+              var time = calcul_retard(start,timestart);
+              session.time = "y";
+                if ( time > 10){
+                  session.time = time + " minutes";
+                  var new_late = {
+                    m_code:session.m_code,
+                    num_agent : session.num_agent,
+                    date:moment().format("YYYY-MM-DD"),
+                    nom:session.name,
+                    time:time,
+                    reason:"",
+                    validation:false
+                  }
+                  await LateSchema(new_late).save();
+                 res.redirect("/employee");
+              }
+              else{
+                session.time = "y";
+                res.redirect("/employee");
+              }
               await UserSchema.findOneAndUpdate({m_code:session.m_code},{late:"y"});
-            }
-            else{
-              session.late = "n";
-              await UserSchema.findOneAndUpdate({m_code:session.m_code},{late:"n"});
-            }
-            session.name = logger.first_name + " " + logger.last_name;
-            session.num_agent = logger.num_agent;
-            var late = await LateSchema.findOne({m_code:session.m_code,date:moment().format("YYYY-MM-DD"),reason:""});
-            if (late){
-              session.time = late.time + " minutes";
-              res.redirect("/employee");
-          }
-          else{
-            var already = await LateSchema.findOne({m_code:session.m_code,date:moment().format("YYYY-MM-DD")});
-            session.time = "y";
-            if (already){
-              res.redirect("/employee");
-            }
-            else{
-              if (session.late == "n"){
-              var start="";
-              var today = moment().day();
-            switch(session.shift){
-              case "SHIFT 1": start = "06:15";break;
-              case "SHIFT 2": start = "12:15";break;
-              case "SHIFT 3": start = "18:15";break;
-              case "TL": start = "21:00";break;
-              case "ENG" : start = "09:00";break;
-              case "IT" : start = "21:00";break;
-              case "RH" : start = "21:00";break;
-              case "MANAGER" : start = "21:00";break;
-              case "GERANT" : start = "21:00";break;
-              default: start = "08:00";break;
-            }
-            switch(today){
-              case 6 : start="08:00";break;
-              case 7 : start="08:00";break;
-            }
-            if (exc_retard.includes(session.shift)){
-              start = "21:00";
-            }
-            var timestart = moment().add(3,'hours').format("HH:mm");
-            var time = calcul_retard(start,timestart);
-            session.time = "y";
-              if ( time > 10){
-                session.time = time + " minutes";
-                var new_late = {
-                  m_code:session.m_code,
-                  num_agent : session.num_agent,
-                  date:moment().format("YYYY-MM-DD"),
-                  nom:session.name,
-                  time:time,
-                  reason:"",
-                  validation:false
-                }
-                await LateSchema(new_late).save();
-               res.redirect("/employee");
             }
             else{
               session.time = "y";
               res.redirect("/employee");
             }
-            await UserSchema.findOneAndUpdate({m_code:session.m_code},{late:"y"});
-          }
-          else{
-            session.time = "y";
-            res.redirect("/employee");
-          }
+              }
+            }
+            }
+            } else if (logger.occupation == "Admin"){
+               session.occupation_a = logger.occupation;
+               if (notification.length > 16 ){
+                 for(n=0;n < 8;n++){
+                   delete notification[0];
+                 }
+               }
+               filtrage = {};
+              res.redirect("/home");
+            }
+            else{
+              session.occupation_tl = "checker";
+              res.redirect("/managementtl");
             }
           }
-          }
-          } else if (logger.occupation == "Admin"){
-             session.occupation_a = logger.occupation;
-             if (notification.length > 16 ){
-               for(n=0;n < 8;n++){
-                 delete notification[0];
-               }
-             }
-             filtrage = {};
-            res.redirect("/home");
-          }
           else{
-            session.occupation_tl = "checker";
-            res.redirect("/managementtl");
+            session.mailconfirm = logger.username;
+            res.render("change_password.html", {
+              first: "y",
+            });
           }
         }
-        else{
-          session.mailconfirm = logger.username;
-          res.render("change_password.html", {
-            first: "y",
+         //Pied
+        } else {
+          res.render("Login.html", {
+            erreur: "Email ou mot de passe incorrect",
           });
         }
-      }
-       //Pied
-      } else {
+      } catch (error) {
         res.render("Login.html", {
-          erreur: "Email ou mot de passe incorrect",
+          erreur: "Probleme sur votre login veuillez reessayez",
         });
       }
+     
     });
+  
 }
 //Validation page
 routeExp.route("/validelate").get(async function (req, res) {
@@ -1604,7 +1613,6 @@ async function leave_permission(user){
   })
 }
 async function conge_define(req){
-  try {
     mongoose
   .connect(
     "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/Pointage?retryWrites=true&w=majority",
@@ -1614,37 +1622,39 @@ async function conge_define(req){
     }
   )
   .then(async () => {
-    var all_leave = await LeaveSchema.find({status:"en attente"});
-    for (i=0;i< all_leave.length;i++){
-      if (moment().format("YYYY-MM-DD") == all_leave[i].date_start){
-        if (all_leave[i].duration >= 1){
-        await UserSchema.findOneAndUpdate({m_code:all_leave[i].m_code},{act_stat:"VACATION",act_loc:"Not defined"});
-        await LeaveSchema.findOneAndUpdate({_id:all_leave[i]._id,m_code:all_leave[i].m_code,date_start:moment().format("YYYY-MM-DD")},{status:"en cours"});
-        const io = req.app.get('io');
-        io.sockets.emit('status',"VACATION"+","+all_leave[i].m_code);
+    try {
+      var all_leave = await LeaveSchema.find({status:"en attente"});
+      for (i=0;i< all_leave.length;i++){
+        if (moment().format("YYYY-MM-DD") == all_leave[i].date_start){
+          if (all_leave[i].duration >= 1){
+          await UserSchema.findOneAndUpdate({m_code:all_leave[i].m_code},{act_stat:"VACATION",act_loc:"Not defined"});
+          await LeaveSchema.findOneAndUpdate({_id:all_leave[i]._id,m_code:all_leave[i].m_code,date_start:moment().format("YYYY-MM-DD")},{status:"en cours"});
+          const io = req.app.get('io');
+          io.sockets.emit('status',"VACATION"+","+all_leave[i].m_code);
+          }
+          else{
+            await LeaveSchema.findOneAndUpdate({_id:all_leave[i]._id,m_code:all_leave[i].m_code,date_start:all_leave[i].date_start},{status:"en cours"});
+          }
+          
         }
-        else{
+        else if(date_diff(moment().format("YYYY-MM-DD"),all_leave[i].date_start) < 0){
+          if (date_diff(moment().format("YYYY-MM-DD"),all_leave[i].date_start) * -1 < all_leave[i].duration && all_leave[i].duration > 1){
+          await UserSchema.findOneAndUpdate({m_code:all_leave[i].m_code},{act_stat:"VACATION",act_loc:"Not defined"});
           await LeaveSchema.findOneAndUpdate({_id:all_leave[i]._id,m_code:all_leave[i].m_code,date_start:all_leave[i].date_start},{status:"en cours"});
+          const io = req.app.get('io');
+          io.sockets.emit('status',"VACATION"+","+all_leave[i].m_code);
+          }
+          else{
+            await LeaveSchema.findOneAndUpdate({_id:all_leave[i]._id,m_code:all_leave[i].m_code,date_start:all_leave[i].date_start},{status:"Terminée"});
+          }
+          
         }
-        
-      }
-      else if(date_diff(moment().format("YYYY-MM-DD"),all_leave[i].date_start) < 0){
-        if (date_diff(moment().format("YYYY-MM-DD"),all_leave[i].date_start) * -1 < all_leave[i].duration && all_leave[i].duration > 1){
-        await UserSchema.findOneAndUpdate({m_code:all_leave[i].m_code},{act_stat:"VACATION",act_loc:"Not defined"});
-        await LeaveSchema.findOneAndUpdate({_id:all_leave[i]._id,m_code:all_leave[i].m_code,date_start:all_leave[i].date_start},{status:"en cours"});
-        const io = req.app.get('io');
-        io.sockets.emit('status',"VACATION"+","+all_leave[i].m_code);
-        }
-        else{
-          await LeaveSchema.findOneAndUpdate({_id:all_leave[i]._id,m_code:all_leave[i].m_code,date_start:all_leave[i].date_start},{status:"Terminée"});
-        }
-        
-      }
-  }
+    }
+    } catch (error) {
+      await conge_define(req);
+      console.log(error)
+    }
   })
-  } catch (error) {
-    
-  }
 }
 //checkleave
 async function checkleave(){
@@ -1657,7 +1667,8 @@ async function checkleave(){
     }
   )
   .then(async () => {
-        var all_leave = await LeaveSchema.find({status:"en cours"});
+    try {
+      var all_leave = await LeaveSchema.find({status:"en cours"});
         for (i=0;i< all_leave.length;i++){
             if (date_diff(moment().format("YYYY-MM-DD"),all_leave[i].date_end) < 0){
               await UserSchema.findOneAndUpdate({m_code:all_leave[i].m_code},{act_stat:"LEFTING"});
@@ -1665,6 +1676,10 @@ async function checkleave(){
               notification.push(all_leave[i].nom + " devrait revenir du congé");
             }
         }
+    } catch (error) {
+      await checkleave();
+    }
+        
   })
 }
 
