@@ -96,7 +96,7 @@ async function login(username,pwd,session,res){
     )
     .then(async () => {
       try {
-        let hash = crypto.createHash('md5').update(pwd.trim().digest("hex");
+       let hash = crypto.createHash('md5').update(pwd.trim()).digest("hex");
         var logger = await UserSchema.findOne({
           username: username.trim(),
           password: hash,
