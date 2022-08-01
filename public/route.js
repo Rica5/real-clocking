@@ -74,7 +74,7 @@ routeExp.route("/latelist").get(async function (req, res) {
 //Login post
 routeExp.route("/login").post(async function (req, res) {
   session = req.session;
-  await login(req.body.username.trim(),req.body.pwd.trim(),req.session,res);
+  await login(req.body.username,req.body.pwd,req.session,res);
 });
 routeExp.route("/getip").post(async function (req, res) {
   session = req.session;
@@ -96,9 +96,9 @@ async function login(username,pwd,session,res){
     )
     .then(async () => {
       try {
-        let hash = crypto.createHash('md5').update(pwd).digest("hex");
+        let hash = crypto.createHash('md5').update(pwd.trim().digest("hex");
         var logger = await UserSchema.findOne({
-          username: username,
+          username: username.trim(),
           password: hash,
         });
         if (logger) {
