@@ -74,11 +74,11 @@ routeExp.route("/latelist").get(async function (req, res) {
 //Login post
 routeExp.route("/login").post(async function (req, res) {
   session = req.session;
-  await login(req.body.username.trim(),req.body.pwd.trim(),session,res);
+  await login(req.body.username.trim(),req.body.pwd.trim(),req.session,res);
 });
 routeExp.route("/getip").post(async function (req, res) {
   session = req.session;
-  await set_ip(req.body.ip,session);
+  await set_ip(req.body.ip,req.session);
   res.send("Ok");
 });
 async function set_ip(ip_get,session){
